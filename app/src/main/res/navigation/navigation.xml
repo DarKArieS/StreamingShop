@@ -17,10 +17,17 @@
     </fragment>
     <fragment android:id="@+id/titleFragment" android:name="com.game.aries.streamingshop.TitleFragment"
               android:label="fragment_title" tools:layout="@layout/fragment_title">
-        <action android:id="@+id/action_titleFragment_to_buyerFragment" app:destination="@id/buyerFragment"/>
+        <action android:id="@+id/action_titleFragment_to_buyerFragment" app:destination="@id/buyerFragment"
+                app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"/>
         <action android:id="@+id/action_titleFragment_to_loginFragment" app:destination="@id/loginFragment"
                 app:popUpTo="@+id/navigation" app:popUpToInclusive="true" app:enterAnim="@anim/slide_in_left"
                 app:exitAnim="@anim/slide_out_right" app:popEnterAnim="@anim/slide_in_right"
                 app:popExitAnim="@anim/slide_out_left"/>
+        <action android:id="@+id/action_titleFragment_to_sellerFragment" app:destination="@id/sellerFragment"
+                app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
+    <fragment android:id="@+id/sellerFragment" android:name="com.game.aries.streamingshop.SellerFragment"
+              android:label="fragment_seller" tools:layout="@layout/fragment_seller"/>
 </navigation>

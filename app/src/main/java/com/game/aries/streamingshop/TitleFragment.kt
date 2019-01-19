@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.findNavController
 import com.facebook.AccessToken
+import com.facebook.GraphRequest
+import com.facebook.GraphResponse
 import com.facebook.login.LoginManager
 import kotlinx.android.synthetic.main.fragment_title.view.*
 
@@ -24,20 +26,41 @@ class TitleFragment : Fragment() {
 
         rootView.buyerButton.setOnClickListener {clickBuyerButton()}
         rootView.logoutButton.setOnClickListener { clickLogoutButton() }
+        rootView.sellerButton.setOnClickListener { clickSellerButton() }
+        rootView.button3.setOnClickListener{testButton()}
 
         println("token: " + AccessToken.getCurrentAccessToken().token)
         println("userId: " + AccessToken.getCurrentAccessToken().userId)
         println("expires: " + AccessToken.getCurrentAccessToken().expires)
         println("isExpired: " + AccessToken.getCurrentAccessToken().isExpired)
 
-        println(AccessToken.getCurrentAccessToken().expires.time)
+        println(AccessToken.getCurrentAccessToken().expires.time) // unit: ms
 
         return rootView
+    }
+
+    private fun testButton(){
+//        val request = GraphRequest.newGraphPathRequest(AccessToken.getCurrentAccessToken(),
+//            "785762085090409"
+//        ) {
+//            println(it.jsonObject)
+//        }
+//
+//        val parameters = Bundle()
+//        parameters.putString("fields", "ingest_streams")
+//        request.parameters = parameters
+//        request.executeAsync()
+
     }
 
     private fun clickBuyerButton(){
         (activity as MainActivity).findNavController(R.id.navHost)
             .navigate(TitleFragmentDirections.actionTitleFragmentToBuyerFragment())
+    }
+
+    private fun clickSellerButton(){
+        (activity as MainActivity).findNavController(R.id.navHost)
+            .navigate(TitleFragmentDirections.actionTitleFragmentToSellerFragment())
     }
 
     private fun clickLogoutButton(){

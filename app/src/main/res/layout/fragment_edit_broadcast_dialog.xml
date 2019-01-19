@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_height="200dp"
+                                             tools:context=".dialog.EditBroadcastDialogFragment"
+                                             android:orientation="vertical" android:layout_width="match_parent">
+    <TextView
+            android:text="直播ID："
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp" android:textSize="24sp"
+            android:id="@+id/dialogIDTextView" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/dialogNameTextView"/>
+    <TextView
+            android:text="直播名稱："
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp" android:textSize="24sp"
+            android:id="@+id/dialogNameTextView"/>
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textShortMessage"
+            android:ems="10"
+            android:id="@+id/broadcastNameEditText"
+            app:layout_constraintStart_toEndOf="@+id/dialogNameTextView" android:layout_marginStart="8dp"
+            app:layout_constraintTop_toTopOf="@+id/dialogNameTextView"
+            app:layout_constraintBottom_toBottomOf="@+id/dialogNameTextView" android:hint="我的直播名稱"/>
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/broadcastIDEditText"
+            app:layout_constraintStart_toEndOf="@+id/dialogIDTextView" android:layout_marginStart="8dp"
+            app:layout_constraintTop_toTopOf="@+id/dialogIDTextView"
+            app:layout_constraintBottom_toBottomOf="@+id/dialogIDTextView"
+            android:hint="Facebook 直播號碼15碼"/>
+    <Button
+            android:text="確定"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/dialogEnterButton" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/broadcastIDEditText"/>
+</android.support.constraint.ConstraintLayout>

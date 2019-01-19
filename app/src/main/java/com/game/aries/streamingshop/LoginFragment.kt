@@ -43,6 +43,7 @@ class LoginFragment : Fragment() {
         rootView.continueButton.setOnClickListener { clickContinueButton() }
 
         rootView.login_button.setReadPermissions("email")
+//        rootView.login_button.setPublishPermissions("publish_video")
         rootView.login_button.fragment = this
         rootView.login_button.registerCallback(callbackManager, object: FacebookCallback<LoginResult>{
             override fun onCancel() {

@@ -10,6 +10,9 @@ apply plugin: 'androidx.navigation.safeargs'
 
 android {
     compileSdkVersion 28
+//    dataBinding {
+//        enabled = true
+//    }
     defaultConfig {
         applicationId "com.game.aries.streamingshop"
         minSdkVersion 21

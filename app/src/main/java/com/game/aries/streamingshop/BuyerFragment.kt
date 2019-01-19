@@ -56,7 +56,7 @@ class BuyerFragment : Fragment() {
         rootView.streamWebView.overScrollMode = ScrollView.OVER_SCROLL_NEVER
 
 
-        val facebookStreamingSerial = "958547934534330"
+        val facebookStreamingSerial = "725689134497981"
         val streamString =
 
 
