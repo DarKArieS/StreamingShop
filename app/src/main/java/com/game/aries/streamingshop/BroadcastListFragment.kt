@@ -40,10 +40,7 @@ class BroadcastListFragment : Fragment(), BroadcastListAdapter.AdapterListener {
     }
 
     override fun clickBroadcast(selectedBroadcast: Broadcast) {
-        //TODO("not implemented")
         MainModel.broadcastWatching = selectedBroadcast
-        println("call click")
-        println(navController)
         navController.navigate(BroadcastListFragmentDirections.actionBroadcastListFragmentToBuyerFragment())
     }
 

@@ -3,6 +3,7 @@ package com.game.aries.streamingshop
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +17,15 @@ import com.facebook.GraphResponse
 import com.game.aries.streamingshop.model.MainModel
 import kotlinx.android.synthetic.main.fragment_buyer.view.*
 
-class BuyerFragment : Fragment() {
+private const val ARG_FRAG_BUYER_ITEM = "ARG_FRAG_BUYER_ITEM"
+private const val ARG_FRAG_BUYER_PAY = "ARG_FRAG_BUYER_PAY"
+
+class BuyerFragment : Fragment(),
+    BuyerItemChildFragment.OnFragmentInteractionListener,
+    BuyerPayChildFragment.OnFragmentInteractionListener
+{
     lateinit var rootView : View
+    private lateinit var myManager : FragmentManager
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -26,8 +34,49 @@ class BuyerFragment : Fragment() {
         // Inflate the layout for this fragment
         rootView =  inflater.inflate(R.layout.fragment_buyer, container, false)
 
+        myManager = this.childFragmentManager
+
+        val buyerItemChildFragment = BuyerItemChildFragment.newInstance(this)
+        val buyerPayChildFragment = BuyerPayChildFragment.newInstance(this)
+        val transaction = myManager.beginTransaction()
+        transaction.add(R.id.buyerFragmentContainer,buyerPayChildFragment, ARG_FRAG_BUYER_PAY)
+        transaction.add(R.id.buyerFragmentContainer,buyerItemChildFragment, ARG_FRAG_BUYER_ITEM)
+        transaction.hide(buyerPayChildFragment)
+        transaction.commit()
+
         setupWebView ()
         return rootView
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).mSupportActionBar.title = MainModel.broadcastWatching.broadcastName
+    }
+
+    override fun onStop() {
+        super.onStop()
+        (activity as MainActivity).mSupportActionBar.title = getString(R.string.app_name)
+    }
+
+    override fun goPayFragment() {
+        val buyerItemChildFragment = myManager.findFragmentByTag(ARG_FRAG_BUYER_ITEM)
+        val buyerPayChildFragment = myManager.findFragmentByTag(ARG_FRAG_BUYER_PAY)
+
+        val transaction = myManager.beginTransaction()
+        transaction.setCustomAnimations(
+            R.anim.slide_in_right,
+            R.anim.slide_out_left,
+            R.anim.slide_in_left,
+            R.anim.slide_out_right
+        )
+        transaction.show(buyerPayChildFragment!!)
+        transaction.hide(buyerItemChildFragment!!)
+        transaction.addToBackStack(null)
+        transaction.commit()
+    }
+
+    override fun clickCheckPay() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     private fun setupWebView (){

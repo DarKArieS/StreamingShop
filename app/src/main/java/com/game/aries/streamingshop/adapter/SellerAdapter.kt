@@ -29,8 +29,8 @@ class SellerAdapter (val context: Context, val sellerItemList: List<SellerItem>,
 
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
 
-        private val sellerProductName = itemView.sellerProductName
-        private val sellerProductPrice = itemView.sellerProductPrice
+        private val sellerProductName = itemView.showProductName
+        private val sellerProductPrice = itemView.showTotalProductPrice
         private val sellerProductDescription = itemView.sellerProductDescription
 
 

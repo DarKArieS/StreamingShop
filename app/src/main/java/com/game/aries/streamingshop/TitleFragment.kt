@@ -6,11 +6,8 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.facebook.AccessToken
-import com.facebook.GraphRequest
-import com.facebook.GraphResponse
 import com.facebook.login.LoginManager
 import kotlinx.android.synthetic.main.fragment_title.view.*
 
@@ -29,7 +26,7 @@ class TitleFragment : Fragment() {
         rootView.buyerButton.setOnClickListener {clickBuyerButton()}
         rootView.logoutButton.setOnClickListener { clickLogoutButton() }
         rootView.sellerButton.setOnClickListener { clickSellerButton() }
-        rootView.button3.setOnClickListener{testButton()}
+        rootView.settingButton.setOnClickListener{testButton()}
 
         println("token: " + AccessToken.getCurrentAccessToken().token)
         println("userId: " + AccessToken.getCurrentAccessToken().userId)

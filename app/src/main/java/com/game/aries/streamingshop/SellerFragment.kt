@@ -29,7 +29,7 @@ class SellerFragment : Fragment(), MenuInterface,
         MainModel.loadSellerInfo(activity as ContextWrapper)
 
         // set action bar
-        setSellerFragment(true)
+        //setSellerFragment(true)
 
         // setup adapter
         MainModel.sellerItemList = mutableListOf(
@@ -47,6 +47,11 @@ class SellerFragment : Fragment(), MenuInterface,
         rootView.addItemFloatingActionButton.setOnClickListener { clickAddItem() }
 
         return rootView
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setSellerFragment(true)
     }
 
     override fun onStop() {
