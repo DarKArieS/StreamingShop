@@ -55,8 +55,10 @@ class BuyerFragment : Fragment() {
         rootView.streamWebView.isVerticalScrollBarEnabled = false
         rootView.streamWebView.overScrollMode = ScrollView.OVER_SCROLL_NEVER
 
+        //ToDo: 用嵌入式php plugin 要手動開聲音 = =
 
-        val facebookStreamingSerial = "725689134497981"
+
+        val facebookStreamingSerial = "388355185056271"
         val streamString =
 
 
@@ -69,7 +71,7 @@ class BuyerFragment : Fragment() {
 
             "<iframe src=\"https://www.facebook.com/plugins/video.php?href=" +
                     "https://www.facebook.com/facebook/videos/" + facebookStreamingSerial + "/" +
-                    "&autoplay=1" +
+                    "&autoplay=0" +
                     "&allowfullscreen=1" +
                     "&show-text=0" +
                     //"&width=220" +

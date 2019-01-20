@@ -33,7 +33,7 @@ class SellerFragment : Fragment(), MenuInterface, EditBroadcastDialogFragment.Ed
         setSellerActionBar(false)
         MainModel.saveSellerInfo(activity as ContextWrapper)
     }
-    
+
     override fun actionEdit(){
         val editNameDialog = EditBroadcastDialogFragment.newInstance(this)
         editNameDialog.show(fragmentManager, "EditNameDialog")

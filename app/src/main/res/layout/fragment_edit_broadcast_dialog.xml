@@ -20,16 +20,17 @@
             app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp" android:textSize="24sp"
             android:id="@+id/dialogNameTextView"/>
     <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:inputType="textShortMessage"
             android:ems="10"
             android:id="@+id/broadcastNameEditText"
             app:layout_constraintStart_toEndOf="@+id/dialogNameTextView" android:layout_marginStart="8dp"
             app:layout_constraintTop_toTopOf="@+id/dialogNameTextView"
-            app:layout_constraintBottom_toBottomOf="@+id/dialogNameTextView" android:hint="我的直播名稱"/>
+            app:layout_constraintBottom_toBottomOf="@+id/dialogNameTextView" android:hint="我的直播名稱"
+            app:layout_constraintEnd_toEndOf="@+id/broadcastIDEditText"/>
     <EditText
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:inputType="number"
             android:ems="10"

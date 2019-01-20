@@ -42,5 +42,5 @@ dependencies {
     implementation "android.arch.navigation:navigation-ui-ktx:1.0.0-alpha09"
 
 
-    implementation 'com.facebook.android:facebook-login:4.33.0'
+    implementation 'com.facebook.android:facebook-login:4.39.0'
 }
