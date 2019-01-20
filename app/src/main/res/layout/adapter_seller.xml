@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="250dp"
+                                             android:background="@drawable/adapter_background">
+
+    <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/sellerProductName" android:layout_marginTop="16dp"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="24dp" android:textSize="24sp" android:hint="輸入物品名稱"
+            android:layout_marginEnd="24dp" app:layout_constraintEnd_toStartOf="@+id/deleteButton"
+    />
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/sellerProductPrice"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toStartOf="@+id/sellerProductNTD"
+            app:layout_constraintBottom_toBottomOf="@+id/sellerProductNTD" android:layout_marginEnd="4dp"
+            android:hint="輸入價格" android:inputType="number"/>
+    <TextView
+            android:text="NTD"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/sellerProductNTD"
+            android:textSize="30sp" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="16dp" android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    <Button
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:id="@+id/deleteButton"
+            android:background="@drawable/com_facebook_close" android:layout_marginTop="16dp"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="16dp"/>
+    <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp" app:srcCompat="@android:drawable/ic_menu_camera"
+            android:id="@+id/imageView"
+            android:background="@android:color/darker_gray"
+            android:layout_marginStart="24dp"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/sellerProductName"/>
+    <EditText
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/sellerProductDescription" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="12dp"
+            android:textSize="14sp"
+            app:layout_constraintTop_toTopOf="@+id/imageView" android:layout_marginBottom="4dp"
+            app:layout_constraintBottom_toTopOf="@+id/sellerProductPrice"
+            app:layout_constraintStart_toEndOf="@+id/imageView" android:layout_marginStart="12dp"
+            android:hint="請介紹要賣的物品"/>
+    <Button
+            android:text="修改"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/sellerItemOKButton" android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="24dp"/>
+    <Button
+            android:text="開賣"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/sellerBroadcastItemButton"
+            app:layout_constraintStart_toEndOf="@+id/sellerItemOKButton"
+            android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/sellerItemOKButton"/>
+    <TextView
+            android:text="賣出：？"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/alreadySelledTextView" android:textSize="24sp"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="24dp"
+            android:layout_marginBottom="16dp" app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"/>
+</android.support.constraint.ConstraintLayout>

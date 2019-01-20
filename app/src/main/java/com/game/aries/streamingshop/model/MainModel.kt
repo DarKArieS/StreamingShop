@@ -29,6 +29,7 @@ object MainModel {
         broadcastName = sharedPreferences.getString(SF_BROADCAST_NAME,"我的直播")!!
     }
 
+    lateinit var sellerItemList : MutableList<SellerAdapterData>
 
 
 }

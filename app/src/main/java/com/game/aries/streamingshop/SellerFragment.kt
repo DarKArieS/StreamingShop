@@ -3,15 +3,20 @@ package com.game.aries.streamingshop
 import android.content.ContextWrapper
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.game.aries.streamingshop.adapter.SellerAdapter
 import com.game.aries.streamingshop.dialog.EditBroadcastDialogFragment
 import com.game.aries.streamingshop.model.MainModel
+import com.game.aries.streamingshop.model.SellerAdapterData
 import com.game.aries.streamingshop.utilities.MenuInterface
 import kotlinx.android.synthetic.main.fragment_seller.view.*
 
-class SellerFragment : Fragment(), MenuInterface, EditBroadcastDialogFragment.EditBroadcast {
+class SellerFragment : Fragment(), MenuInterface,
+    EditBroadcastDialogFragment.EditBroadcast,
+    SellerAdapter.AdapterListener {
     lateinit var rootView : View
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,6 +30,21 @@ class SellerFragment : Fragment(), MenuInterface, EditBroadcastDialogFragment.Ed
 
         // set action bar
         setSellerFragment(true)
+
+        // setup adapter
+        MainModel.sellerItemList = mutableListOf(
+            SellerAdapterData("", 0, "")
+        )
+        setupAdapter(MainModel.sellerItemList)
+
+        // setup refresh
+        rootView.swipeRefreshLayout.setOnRefreshListener{
+            setupAdapter(MainModel.sellerItemList)
+            rootView.swipeRefreshLayout.isRefreshing=false
+        }
+
+        // setup button
+        rootView.addItemFloatingActionButton.setOnClickListener { clickAddItem() }
 
         return rootView
     }
@@ -46,7 +66,7 @@ class SellerFragment : Fragment(), MenuInterface, EditBroadcastDialogFragment.Ed
     }
 
     private fun checkBroadcastID(){
-        if (MainModel.broadcastID.length==15){
+        if (MainModel.broadcastID.length>=15){
             rootView.startStreamFloatingActionButton.isClickable = true
             rootView.startStreamFloatingActionButton.setImageResource(R.drawable.ic_streaming_start_vector)
         }else{
@@ -69,5 +89,20 @@ class SellerFragment : Fragment(), MenuInterface, EditBroadcastDialogFragment.Ed
                 (activity as MainActivity).menuInterface = null
             }
         }
+    }
+
+    private fun setupAdapter(itemList:List<SellerAdapterData>) {
+        rootView.sellerRecyclerView.adapter = SellerAdapter(this.context!!, itemList, this)
+        rootView.sellerRecyclerView.layoutManager = LinearLayoutManager(this.context!!)
+    }
+
+    private fun clickAddItem(){
+        MainModel.sellerItemList.add(0, SellerAdapterData("", 0, ""))
+        setupAdapter(MainModel.sellerItemList)
+    }
+
+    override fun deleteItem(index: Int) {
+        MainModel.sellerItemList.removeAt(index)
+        setupAdapter(MainModel.sellerItemList)
     }
 }
