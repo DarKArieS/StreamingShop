@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import com.game.aries.streamingshop.dialog.EditBroadcastDialogFragment
 import com.game.aries.streamingshop.model.MainModel
 import com.game.aries.streamingshop.utilities.MenuInterface
+import kotlinx.android.synthetic.main.fragment_seller.view.*
 
 class SellerFragment : Fragment(), MenuInterface, EditBroadcastDialogFragment.EditBroadcast {
     lateinit var rootView : View
@@ -23,14 +24,14 @@ class SellerFragment : Fragment(), MenuInterface, EditBroadcastDialogFragment.Ed
         MainModel.loadSellerInfo(activity as ContextWrapper)
 
         // set action bar
-        setSellerActionBar(true)
+        setSellerFragment(true)
 
         return rootView
     }
 
     override fun onStop() {
         super.onStop()
-        setSellerActionBar(false)
+        setSellerFragment(false)
         MainModel.saveSellerInfo(activity as ContextWrapper)
     }
 
@@ -41,11 +42,23 @@ class SellerFragment : Fragment(), MenuInterface, EditBroadcastDialogFragment.Ed
 
     override fun editBroadcast() {
         (activity as MainActivity).mSupportActionBar.title = MainModel.broadcastName
+        checkBroadcastID()
     }
 
-    private fun setSellerActionBar(setTrue:Boolean){
+    private fun checkBroadcastID(){
+        if (MainModel.broadcastID.length==15){
+            rootView.startStreamFloatingActionButton.isClickable = true
+            rootView.startStreamFloatingActionButton.setImageResource(R.drawable.ic_streaming_start_vector)
+        }else{
+            rootView.startStreamFloatingActionButton.isClickable = false
+            rootView.startStreamFloatingActionButton.setImageResource(R.drawable.ic_streaming_forbidden_vector)
+        }
+    }
+
+    private fun setSellerFragment(setTrue:Boolean){
         when(setTrue){
             true->{
+                checkBroadcastID()
                 (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
                 (activity as MainActivity).mSupportActionBar.title = MainModel.broadcastName
                 (activity as MainActivity).menuInterface = this
