@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
@@ -16,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_title.view.*
 
 class TitleFragment : Fragment() {
     lateinit var rootView : View
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,7 +57,7 @@ class TitleFragment : Fragment() {
 
     private fun clickBuyerButton(){
         (activity as MainActivity).findNavController(R.id.navHost)
-            .navigate(TitleFragmentDirections.actionTitleFragmentToBuyerFragment())
+            .navigate(TitleFragmentDirections.actionTitleFragmentToBroadcastListFragment())
     }
 
     private fun clickSellerButton(){

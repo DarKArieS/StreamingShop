@@ -5,12 +5,11 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import com.game.aries.streamingshop.model.SellerAdapterData
+import com.game.aries.streamingshop.model.SellerItem
 import kotlinx.android.synthetic.main.adapter_seller.view.*
 import com.game.aries.streamingshop.R
 
-class SellerAdapter (val context: Context, val sellerItemList: List<SellerAdapterData>, val listener: AdapterListener):
+class SellerAdapter (val context: Context, val sellerItemList: List<SellerItem>, val listener: AdapterListener):
     RecyclerView.Adapter<SellerAdapter.ViewHolder>() {
 
     interface AdapterListener{
@@ -35,7 +34,7 @@ class SellerAdapter (val context: Context, val sellerItemList: List<SellerAdapte
         private val sellerProductDescription = itemView.sellerProductDescription
 
 
-        fun bind(index:Int, sellerItem: SellerAdapterData) {
+        fun bind(index:Int, sellerItem: SellerItem) {
             initEditText(sellerItem)
 
             itemView.deleteButton.setOnClickListener{
@@ -51,7 +50,7 @@ class SellerAdapter (val context: Context, val sellerItemList: List<SellerAdapte
             }
         }
 
-        fun initEditText(sellerItem: SellerAdapterData){
+        fun initEditText(sellerItem: SellerItem){
             val price = when(sellerItem.price!=0){
                  true->sellerItem.price.toString()
                  false->""

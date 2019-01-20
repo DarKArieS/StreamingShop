@@ -17,7 +17,7 @@ object MainModel {
     private val SF_SELLER = "SF_SELLER"
     private val SF_BROADCAST_NAME = "SF_BROADCAST_NAME"
 
-    var broadcastName = "我的直播"
+    var broadcastName = "我的直播拍賣"
     var broadcastID = ""
     fun saveSellerInfo(activity: ContextWrapper){
         sharedPreferences = activity.getSharedPreferences(SF_SELLER, Context.MODE_PRIVATE)
@@ -29,7 +29,9 @@ object MainModel {
         broadcastName = sharedPreferences.getString(SF_BROADCAST_NAME,"我的直播")!!
     }
 
-    lateinit var sellerItemList : MutableList<SellerAdapterData>
+    lateinit var sellerItemList : MutableList<SellerItem>
 
+    // for buyer page
+    var broadcastWatching = Broadcast("","")
 
 }

@@ -10,7 +10,7 @@ import android.view.ViewGroup
 import com.game.aries.streamingshop.adapter.SellerAdapter
 import com.game.aries.streamingshop.dialog.EditBroadcastDialogFragment
 import com.game.aries.streamingshop.model.MainModel
-import com.game.aries.streamingshop.model.SellerAdapterData
+import com.game.aries.streamingshop.model.SellerItem
 import com.game.aries.streamingshop.utilities.MenuInterface
 import kotlinx.android.synthetic.main.fragment_seller.view.*
 
@@ -33,7 +33,7 @@ class SellerFragment : Fragment(), MenuInterface,
 
         // setup adapter
         MainModel.sellerItemList = mutableListOf(
-            SellerAdapterData("", 0, "")
+            SellerItem("", 0, "")
         )
         setupAdapter(MainModel.sellerItemList)
 
@@ -91,13 +91,13 @@ class SellerFragment : Fragment(), MenuInterface,
         }
     }
 
-    private fun setupAdapter(itemList:List<SellerAdapterData>) {
+    private fun setupAdapter(itemList:List<SellerItem>) {
         rootView.sellerRecyclerView.adapter = SellerAdapter(this.context!!, itemList, this)
         rootView.sellerRecyclerView.layoutManager = LinearLayoutManager(this.context!!)
     }
 
     private fun clickAddItem(){
-        MainModel.sellerItemList.add(0, SellerAdapterData("", 0, ""))
+        MainModel.sellerItemList.add(0, SellerItem("", 0, ""))
         setupAdapter(MainModel.sellerItemList)
     }
 

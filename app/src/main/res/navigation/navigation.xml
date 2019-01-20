@@ -5,7 +5,8 @@
             app:startDestination="@id/loginFragment">
 
     <fragment android:id="@+id/buyerFragment" android:name="com.game.aries.streamingshop.BuyerFragment"
-              android:label="fragment_buyer" tools:layout="@layout/fragment_buyer"/>
+              android:label="fragment_buyer" tools:layout="@layout/fragment_buyer">
+    </fragment>
     <fragment android:id="@+id/loginFragment" android:name="com.game.aries.streamingshop.LoginFragment"
               android:label="fragment_login" tools:layout="@layout/fragment_login">
         <action android:id="@+id/action_loginFragment_to_titleFragment" app:destination="@id/titleFragment"
@@ -17,9 +18,6 @@
     </fragment>
     <fragment android:id="@+id/titleFragment" android:name="com.game.aries.streamingshop.TitleFragment"
               android:label="fragment_title" tools:layout="@layout/fragment_title">
-        <action android:id="@+id/action_titleFragment_to_buyerFragment" app:destination="@id/buyerFragment"
-                app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
-                app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"/>
         <action android:id="@+id/action_titleFragment_to_loginFragment" app:destination="@id/loginFragment"
                 app:popUpTo="@+id/navigation" app:popUpToInclusive="true" app:enterAnim="@anim/slide_in_left"
                 app:exitAnim="@anim/slide_out_right" app:popEnterAnim="@anim/slide_in_right"
@@ -27,7 +25,18 @@
         <action android:id="@+id/action_titleFragment_to_sellerFragment" app:destination="@id/sellerFragment"
                 app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
                 app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"/>
+        <action android:id="@+id/action_titleFragment_to_broadcastListFragment"
+                app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"
+                app:destination="@id/broadcastListFragment"/>
     </fragment>
     <fragment android:id="@+id/sellerFragment" android:name="com.game.aries.streamingshop.SellerFragment"
               android:label="fragment_seller" tools:layout="@layout/fragment_seller"/>
+    <fragment android:id="@+id/broadcastListFragment" android:name="com.game.aries.streamingshop.BroadcastListFragment"
+              android:label="BroadcastListFragment">
+        <action android:id="@+id/action_broadcastListFragment_to_buyerFragment"
+                app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"
+                app:destination="@id/buyerFragment"/>
+    </fragment>
 </navigation>
