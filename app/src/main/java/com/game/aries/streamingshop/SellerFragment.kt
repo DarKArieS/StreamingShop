@@ -1,8 +1,10 @@
 package com.game.aries.streamingshop
 
+import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.content.ContextWrapper
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -20,6 +22,7 @@ import kotlinx.android.synthetic.main.fragment_seller.view.*
 import java.io.File
 import java.lang.Exception
 import android.os.Build
+import android.os.Environment
 import android.support.v4.content.FileProvider
 import com.game.aries.streamingshop.dialog.GetImageDialog
 
@@ -134,18 +137,18 @@ class SellerFragment : Fragment(), MenuInterface,
         }
     }
 
-    private var imageUri :Uri? = null
+    private var imageUri:Uri? = null
 
-    private fun imageCaptureIntent() {
+    private fun imageCaptureIntent(){
 //        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 //        this.startActivityForResult(intent, ACT_INTENT_CAPTURE_IMAGE)
 
-        val tmpFile = File(MainModel.tmpExternalFile,"output.png")
+        val tmpFile = File(MainModel.tmpExternalFile,"captureImg.png")
         try {
             if(tmpFile.exists()) tmpFile.delete()
             tmpFile.createNewFile()
         }catch (e:Exception){
-            println("corp image Error Orz !~~~!!~~")
+            println("capture image Error Orz !~~~!!~~")
         }
         imageUri = Uri.fromFile(tmpFile)
         if (Build.VERSION.SDK_INT >= 24){
@@ -174,40 +177,66 @@ class SellerFragment : Fragment(), MenuInterface,
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if(resultCode == RESULT_CANCELED){
+            imageUri = null
+        }
 
         if(requestCode == ACT_INTENT_GET_IMAGE && resultCode == RESULT_OK){
             println("ACT_INTENT_GET_IMAGE")
-
             imageUri = data?.data
-
+            println(imageUri)
+            imageCorpIntent()
         }
 
         if(requestCode == ACT_INTENT_CAPTURE_IMAGE && resultCode == RESULT_OK){
             println("ACT_INTENT_CAPTURE_IMAGE")
-
-
+            println(imageUri)
+            imageCorpIntent(true)
         }
-
-        println(imageUri)
 
         if(requestCode == ACT_INTENT_CORP_IMAGE && resultCode == RESULT_OK){
             println("ACT_INTENT_CORP_IMAGE")
-
+            println(data)
         }
     }
 
-    private fun getImageResult(uri: Uri?){
+    private fun imageCorpIntent(isFromCamera: Boolean = false){
+        val intent = Intent("com.android.camera.action.CROP")
+        if (isFromCamera && Build.VERSION.SDK_INT >= 24)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
-    }
+        // set cut file
+        val cutFile = File(
+            //Environment.getExternalStorageDirectory().path,
+            MainModel.tmpExternalFile,"localCutImg.png")
 
-    private fun imageCorpIntent(){
-//        val intent = Intent("com.android.camera.action.CROP")
+        try {
+            if(cutFile.exists()) cutFile.delete()
+            cutFile.createNewFile()
+        }catch (e:Exception){
+            println("corp image Error Orz !~~~!!~~")
+        }
 
+        val outputUri = Uri.fromFile(cutFile)
+        println("cutFile outputUri")
+        println(outputUri)
 
-    }
+        intent.putExtra("crop",true)
+        // set X/Y ratio
+        intent.putExtra("aspectX",1)
+        intent.putExtra("aspectY",1)
+        intent.putExtra("return-data",false)
 
-    private fun corpImageResult(){
+        if (imageUri != null) {
+            intent.setDataAndType(imageUri, "image/*")
+        }
+        if (outputUri != null) {
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri)
+        }
+        intent.putExtra("noFaceDetection", true)
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString())
 
+        startActivityForResult(intent, ACT_INTENT_CORP_IMAGE)
     }
 
 }
