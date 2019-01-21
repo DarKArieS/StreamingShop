@@ -48,11 +48,15 @@ class BuyerAdapter (val context: Context, val buyerItemList: List<BuyerItem>, va
 
             showTotalProductNumber.addTextChangedListener(object: TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
-
-                    if(showTotalProductNumber.editableText.toString()!=""){
+                    if(showTotalProductNumber.editableText.toString().length>3){
+                        buyerItem.number = 999
+                        showTotalProductNumber.setText(buyerItem.number.toString())
+                        showTotalProductPrice.text = (buyerItem.price * buyerItem.number).toString()
+                    }else if(showTotalProductNumber.editableText.toString()!=""){
                         buyerItem.number = showTotalProductNumber.editableText.toString().toInt()
                         showTotalProductPrice.text = (buyerItem.price * buyerItem.number).toString()
-                    }else {
+                    }
+                    else {
                         buyerItem.number = 0
                         showTotalProductPrice.text = "？"
                     }
@@ -69,7 +73,7 @@ class BuyerAdapter (val context: Context, val buyerItemList: List<BuyerItem>, va
         }
 
         fun clickMinusButton(buyerItem: BuyerItem){
-            if (buyerItem.number>1){
+            if (buyerItem.number>0){
                 buyerItem.number --
                 showTotalProductNumber.setText(buyerItem.number.toString())
             }

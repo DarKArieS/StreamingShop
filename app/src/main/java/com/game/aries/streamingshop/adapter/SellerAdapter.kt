@@ -14,6 +14,7 @@ class SellerAdapter (val context: Context, val sellerItemList: List<SellerItem>,
 
     interface AdapterListener{
         fun deleteItem(index:Int)
+        fun setImage()
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
@@ -32,25 +33,32 @@ class SellerAdapter (val context: Context, val sellerItemList: List<SellerItem>,
         private val sellerProductName = itemView.showProductName
         private val sellerProductPrice = itemView.showTotalProductPrice
         private val sellerProductDescription = itemView.sellerProductDescription
+        private val deleteButton = itemView.deleteButton
+        private val sellerItemOKButton = itemView.sellerItemOKButton
+        private val showProductImage = itemView.showProductImage
 
 
         fun bind(index:Int, sellerItem: SellerItem) {
             initEditText(sellerItem)
 
-            itemView.deleteButton.setOnClickListener{
+            deleteButton.setOnClickListener{
                 listener.deleteItem(index)
             }
 
-            itemView.sellerItemOKButton.setOnClickListener{
+            sellerItemOKButton.setOnClickListener{
                 sellerItem.name = sellerProductName.editableText.toString()
                 if(sellerProductPrice.editableText.toString()!="")
                     sellerItem.price= sellerProductPrice.editableText.toString().toInt()
                 else sellerItem.price = 0
                 sellerItem.description= sellerProductDescription.editableText.toString()
             }
+
+            showProductImage.setOnClickListener {
+                listener.setImage()
+            }
         }
 
-        fun initEditText(sellerItem: SellerItem){
+        private fun initEditText(sellerItem: SellerItem){
             val price = when(sellerItem.price!=0){
                  true->sellerItem.price.toString()
                  false->""
@@ -61,4 +69,6 @@ class SellerAdapter (val context: Context, val sellerItemList: List<SellerItem>,
         }
 
     }
+
+
 }

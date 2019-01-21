@@ -3,8 +3,12 @@ package com.game.aries.streamingshop.model
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.SharedPreferences
+import java.io.File
 
 object MainModel {
+//    lateinit var currentActivity : MainActivity
+
+    var tmpExternalFile : File? = null
 
     var isLoading = false
     fun checkIsLoading():Boolean{

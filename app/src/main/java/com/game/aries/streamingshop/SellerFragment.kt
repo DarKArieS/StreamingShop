@@ -1,21 +1,35 @@
 package com.game.aries.streamingshop
 
+import android.app.Activity.RESULT_OK
 import android.content.ContextWrapper
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.game.aries.streamingshop.adapter.SellerAdapter
-import com.game.aries.streamingshop.dialog.EditBroadcastDialogFragment
+import com.game.aries.streamingshop.dialog.EditBroadcastDialog
 import com.game.aries.streamingshop.model.MainModel
 import com.game.aries.streamingshop.model.SellerItem
 import com.game.aries.streamingshop.utilities.MenuInterface
 import kotlinx.android.synthetic.main.fragment_seller.view.*
+import java.io.File
+import java.lang.Exception
+import android.os.Build
+import android.support.v4.content.FileProvider
+import com.game.aries.streamingshop.dialog.GetImageDialog
+
+private const val  ACT_INTENT_GET_IMAGE = 100
+private const val  ACT_INTENT_CAPTURE_IMAGE = 101
+private const val  ACT_INTENT_CORP_IMAGE = 102
 
 class SellerFragment : Fragment(), MenuInterface,
-    EditBroadcastDialogFragment.EditBroadcast,
+    EditBroadcastDialog.EditBroadcast,
+    GetImageDialog.DialogListener,
     SellerAdapter.AdapterListener {
     lateinit var rootView : View
     override fun onCreateView(
@@ -27,9 +41,6 @@ class SellerFragment : Fragment(), MenuInterface,
 
         //read stored information
         MainModel.loadSellerInfo(activity as ContextWrapper)
-
-        // set action bar
-        //setSellerFragment(true)
 
         // setup adapter
         MainModel.sellerItemList = mutableListOf(
@@ -61,7 +72,7 @@ class SellerFragment : Fragment(), MenuInterface,
     }
 
     override fun actionEdit(){
-        val editNameDialog = EditBroadcastDialogFragment.newInstance(this)
+        val editNameDialog = EditBroadcastDialog.newInstance(this)
         editNameDialog.show(fragmentManager, "EditNameDialog")
     }
 
@@ -110,4 +121,93 @@ class SellerFragment : Fragment(), MenuInterface,
         MainModel.sellerItemList.removeAt(index)
         setupAdapter(MainModel.sellerItemList)
     }
+
+    override fun setImage() {
+        val getImageDialog = GetImageDialog.newInstance(this)
+        getImageDialog.show(fragmentManager, "GetImageDialog")
+    }
+
+    override fun clickButton(action: GetImageDialog.Action) {
+        when(action){
+            GetImageDialog.Action.CAMERA->imageCaptureIntent()
+            GetImageDialog.Action.ALBUM->imageGetIntent()
+        }
+    }
+
+    private var imageUri :Uri? = null
+
+    private fun imageCaptureIntent() {
+//        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//        this.startActivityForResult(intent, ACT_INTENT_CAPTURE_IMAGE)
+
+        val tmpFile = File(MainModel.tmpExternalFile,"output.png")
+        try {
+            if(tmpFile.exists()) tmpFile.delete()
+            tmpFile.createNewFile()
+        }catch (e:Exception){
+            println("corp image Error Orz !~~~!!~~")
+        }
+        imageUri = Uri.fromFile(tmpFile)
+        if (Build.VERSION.SDK_INT >= 24){
+            imageUri = FileProvider.getUriForFile(
+                activity as MainActivity,
+                "com.game.aries.streamingshop.fileprovider",
+                tmpFile)
+        }
+
+        val intent = Intent("android.media.action.IMAGE_CAPTURE")
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
+        startActivityForResult(intent, ACT_INTENT_CAPTURE_IMAGE)
+    }
+
+
+    private fun imageGetIntent() {
+//        val takePhotoRequest = 0
+//        val intent = Intent(Intent.ACTION_GET_CONTENT)
+//        intent.type = "image*//**//*"
+//        this.startActivityForResult(intent,takePhotoRequest)
+
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.data = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        startActivityForResult(intent, ACT_INTENT_GET_IMAGE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode == ACT_INTENT_GET_IMAGE && resultCode == RESULT_OK){
+            println("ACT_INTENT_GET_IMAGE")
+
+            imageUri = data?.data
+
+        }
+
+        if(requestCode == ACT_INTENT_CAPTURE_IMAGE && resultCode == RESULT_OK){
+            println("ACT_INTENT_CAPTURE_IMAGE")
+
+
+        }
+
+        println(imageUri)
+
+        if(requestCode == ACT_INTENT_CORP_IMAGE && resultCode == RESULT_OK){
+            println("ACT_INTENT_CORP_IMAGE")
+
+        }
+    }
+
+    private fun getImageResult(uri: Uri?){
+
+    }
+
+    private fun imageCorpIntent(){
+//        val intent = Intent("com.android.camera.action.CROP")
+
+
+    }
+
+    private fun corpImageResult(){
+
+    }
+
 }

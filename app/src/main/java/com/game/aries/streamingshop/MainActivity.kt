@@ -17,6 +17,7 @@ import com.game.aries.streamingshop.model.MainModel
 
 class MainActivity : AppCompatActivity() {
 
+    // ToDo: sometimes customMenu will be null
     lateinit var customMenu: Menu
     lateinit var mSupportActionBar: ActionBar
     var menuInterface: MenuInterface? = null
@@ -27,12 +28,18 @@ class MainActivity : AppCompatActivity() {
 
         val navController = this.findNavController(R.id.navHost)
 
+        MainModel.tmpExternalFile = this.externalCacheDir
+
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        customMenu = menu!!
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        customMenu = menu
         mSupportActionBar = supportActionBar!!
         menuInflater.inflate(R.menu.custom_action_bar, customMenu)
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         return super.onCreateOptionsMenu(menu)
     }
 

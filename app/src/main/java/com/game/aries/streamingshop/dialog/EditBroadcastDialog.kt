@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import com.game.aries.streamingshop.R
 import com.game.aries.streamingshop.model.MainModel
-import kotlinx.android.synthetic.main.fragment_edit_broadcast_dialog.view.*
+import kotlinx.android.synthetic.main.dialog_edit_broadcast.view.*
 
 
-class EditBroadcastDialogFragment : DialogFragment() {
+class EditBroadcastDialog : DialogFragment() {
     private lateinit var rootView: View
 
     override fun onCreateView(
@@ -18,7 +18,7 @@ class EditBroadcastDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        rootView = inflater.inflate(R.layout.fragment_edit_broadcast_dialog, container, false)
+        rootView = inflater.inflate(R.layout.dialog_edit_broadcast, container, false)
 
         rootView.broadcastNameEditText.setText(MainModel.broadcastName)
         rootView.broadcastIDEditText.setText(MainModel.broadcastID)
@@ -42,7 +42,7 @@ class EditBroadcastDialogFragment : DialogFragment() {
     companion object {
         //@JvmStatic
         fun newInstance(listener: EditBroadcast) =
-            EditBroadcastDialogFragment().apply {
+            EditBroadcastDialog().apply {
                 editBroadcast = listener
             }
     }

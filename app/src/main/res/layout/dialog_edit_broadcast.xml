@@ -3,7 +3,7 @@
                                              xmlns:app="http://schemas.android.com/apk/res-auto"
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_height="200dp"
-                                             tools:context=".dialog.EditBroadcastDialogFragment"
+                                             tools:context=".dialog.EditBroadcastDialog"
                                              android:orientation="vertical" android:layout_width="match_parent">
     <TextView
             android:text="直播ID："
