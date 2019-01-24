@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Streaming Shop</string>
-    <string name="facebook_app_id">2244018242588537</string>
-    <string name="fb_login_protocol_scheme">fb2244018242588537</string>
+    <string name="facebook_app_id">587226395035824</string>
+    <string name="fb_login_protocol_scheme">fb587226395035824</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

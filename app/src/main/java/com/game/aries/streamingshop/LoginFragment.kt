@@ -13,6 +13,7 @@ import com.facebook.*
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.game.aries.streamingshop.model.MainModel
+import com.game.aries.streamingshop.utilities.CommunicationManager
 import kotlinx.android.synthetic.main.fragment_login.view.*
 import org.json.JSONObject
 
@@ -21,7 +22,7 @@ class LoginFragment : Fragment() {
     private lateinit var rootView : View
     private lateinit var navController : NavController
 
-    val callbackManager = CallbackManager.Factory.create()
+    private val callbackManager = CallbackManager.Factory.create()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -81,7 +82,6 @@ class LoginFragment : Fragment() {
 //                request2.parameters = parameters
 //                request2.executeAsync()
 
-
                 println("result")
                 println(result)
                 println(result?.accessToken)
@@ -100,9 +100,7 @@ class LoginFragment : Fragment() {
                 println("userId: " + AccessToken.getCurrentAccessToken().userId)
                 println("lastRefresh: " + AccessToken.getCurrentAccessToken().lastRefresh)
 
-
-                //ToDo: read info and save to MainModel
-                navController.navigate(LoginFragmentDirections.actionLoginFragmentToTitleFragment())
+                login()
             }
         })
 
@@ -117,5 +115,17 @@ class LoginFragment : Fragment() {
 
     private fun clickContinueButton(){
         navController.navigate(LoginFragmentDirections.actionLoginFragmentToTitleFragment())
+    }
+
+    private fun login(){
+        val cManager = CommunicationManager()
+        cManager.communication = {
+                p0,p1,_->
+            MainModel.IsFirstLogin(p0, p1)
+        }
+        cManager.navigation = {
+            navController.navigate(LoginFragmentDirections.actionLoginFragmentToTitleFragment())
+        }
+        cManager.commit(activity as MainActivity)
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.SharedPreferences
 import android.text.format.DateFormat
+import com.facebook.AccessToken
 import okhttp3.*
 import org.json.JSONObject
 import java.io.File
@@ -13,7 +14,8 @@ import java.util.*
 
 object MainModel {
     var tmpExternalFile : File? = null
-    const val backendUrl = "http://52.193.236.190/"
+    const val ttnbackendUrl = "http://52.193.236.190/"
+    const val backendUrl = "https://livevideoseller.sckao.space/"
 
     enum class MainActivityLifeCycle {
         RUNNING, PAUSE
@@ -27,6 +29,45 @@ object MainModel {
     }
 
     private lateinit var sharedPreferences: SharedPreferences
+
+//===================================================================================================
+// for login page
+//===================================================================================================
+
+    var isFirstLogin = false
+
+    fun IsFirstLogin(successCallBack: ()->Unit, failureCallBack: ()->Unit,
+                     arguments: CommunicationManager.CommunicationArguments?=null){
+        val requestBody: RequestBody =
+            MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("token", AccessToken.getCurrentAccessToken().token)
+            .addFormDataPart("expired_time", (AccessToken.getCurrentAccessToken().expires.time/1000).toString())
+            .addFormDataPart("device", "Android")
+            .build()
+
+        val request =
+            Request.Builder().url(backendUrl + "api/login")
+            .addHeader("Content-Type", "application/json")
+            .post(requestBody)
+            .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+//                val readJSON = JSONObject(response!!.body()!!.string())
+//                println(readJSON)
+
+                println(response!!.body()!!.string())
+
+                successCallBack()
+            }
+        })
+
+    }
 
 //===================================================================================================
 // for seller page
@@ -63,7 +104,7 @@ object MainModel {
         val requestBody = multiBody.build() as RequestBody
 //        val url = Resources.getSystem().getString(R.string.URL) + "api/streams"
 //        println(url)
-        val request = Request.Builder().url(backendUrl + "api/streams")
+        val request = Request.Builder().url(ttnbackendUrl + "api/streams")
             .addHeader("Content-Type", "application/json")
             .post(requestBody)
             .build()
@@ -84,8 +125,8 @@ object MainModel {
 
     }
 
-    fun uploadPhoto(successCallBack: ()->Unit, failureCallBack: ()->Unit,
-                    arguments: CommunicationManager.UploadPhoto){
+    fun ttnUploadPhoto(successCallBack: ()->Unit, failureCallBack: ()->Unit,
+                    arguments: CommunicationManager.TtNUploadPhoto){
         val file = File(arguments.uri?.path)
         val mediaType = MediaType.parse("image/png")
         val multiBody = MultipartBody.Builder()
@@ -99,7 +140,7 @@ object MainModel {
         val requestBody = multiBody.build() as RequestBody
 
 //        val request = Request.Builder().url(R.string.URL.toString() + "api/merchandises")
-        val request = Request.Builder().url(backendUrl + "api/merchandises")
+        val request = Request.Builder().url(ttnbackendUrl + "api/merchandises")
             .addHeader("Content-Type", "application/json")
             .post(requestBody)
             .build()

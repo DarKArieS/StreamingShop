@@ -48,5 +48,8 @@ class CommunicationManager {
 
     // arguments data class
     interface CommunicationArguments
-    data class UploadPhoto(var uri: Uri?, var stream_id: String): CommunicationArguments
+    data class TtNUploadPhoto(var uri: Uri?, var stream_id: String): CommunicationArguments
+
+
+
 }
