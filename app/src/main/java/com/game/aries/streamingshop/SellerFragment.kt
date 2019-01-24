@@ -22,9 +22,11 @@ import kotlinx.android.synthetic.main.fragment_seller.view.*
 import java.io.File
 import java.lang.Exception
 import android.os.Build
-import android.os.Environment
 import android.support.v4.content.FileProvider
+import android.widget.Toast
 import com.game.aries.streamingshop.dialog.GetImageDialog
+import com.game.aries.streamingshop.utilities.CommunicationManager
+import com.game.aries.streamingshop.utilities.generateOrderId
 
 private const val  ACT_INTENT_GET_IMAGE = 100
 private const val  ACT_INTENT_CAPTURE_IMAGE = 101
@@ -47,7 +49,7 @@ class SellerFragment : Fragment(), MenuInterface,
 
         // setup adapter
         MainModel.sellerItemList = mutableListOf(
-            SellerItem("", 0, "")
+            SellerItem()
         )
         setupAdapter(MainModel.sellerItemList)
 
@@ -59,6 +61,7 @@ class SellerFragment : Fragment(), MenuInterface,
 
         // setup button
         rootView.addItemFloatingActionButton.setOnClickListener { clickAddItem() }
+        rootView.startStreamFloatingActionButton.setOnClickListener{ clickStartStreamFloatingActionButton() }
 
         return rootView
     }
@@ -80,17 +83,30 @@ class SellerFragment : Fragment(), MenuInterface,
     }
 
     override fun editBroadcast() {
-        (activity as MainActivity).mSupportActionBar.title = MainModel.broadcastName
+        (activity as MainActivity).mSupportActionBar.title = MainModel.sellerBroadcast.broadcastName
         checkBroadcastID()
     }
 
     private fun checkBroadcastID(){
-        if (MainModel.broadcastID.length>=15){
-            rootView.startStreamFloatingActionButton.isClickable = true
+        if (MainModel.sellerBroadcast.broadcastID.length>=15){
+//            rootView.startStreamFloatingActionButton.isClickable = true
             rootView.startStreamFloatingActionButton.setImageResource(R.drawable.ic_streaming_start_vector)
         }else{
-            rootView.startStreamFloatingActionButton.isClickable = false
+//            rootView.startStreamFloatingActionButton.isClickable = false
             rootView.startStreamFloatingActionButton.setImageResource(R.drawable.ic_streaming_forbidden_vector)
+        }
+    }
+
+    private fun clickStartStreamFloatingActionButton(){
+        if (MainModel.sellerBroadcast.broadcastID.length>=15){
+            val cManager = CommunicationManager()
+            cManager.communication = {
+                p0,p1,_->
+                MainModel.ttnCreateBroadcast(p0, p1)
+            }
+            cManager.commit(activity as MainActivity)
+        }else{
+            Toast.makeText(activity as MainActivity, "請輸入Facebook 直播ID", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -99,7 +115,7 @@ class SellerFragment : Fragment(), MenuInterface,
             true->{
                 checkBroadcastID()
                 (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
-                (activity as MainActivity).mSupportActionBar.title = MainModel.broadcastName
+                (activity as MainActivity).mSupportActionBar.title = MainModel.sellerBroadcast.broadcastName
                 (activity as MainActivity).menuInterface = this
             }
             false->{
@@ -111,12 +127,12 @@ class SellerFragment : Fragment(), MenuInterface,
     }
 
     private fun setupAdapter(itemList:List<SellerItem>) {
-        rootView.sellerRecyclerView.adapter = SellerAdapter(this.context!!, itemList, this)
+        rootView.sellerRecyclerView.adapter = SellerAdapter(this.context!!, itemList, this, activity as MainActivity)
         rootView.sellerRecyclerView.layoutManager = LinearLayoutManager(this.context!!)
     }
 
     private fun clickAddItem(){
-        MainModel.sellerItemList.add(0, SellerItem("", 0, ""))
+        MainModel.sellerItemList.add(0, SellerItem())
         setupAdapter(MainModel.sellerItemList)
     }
 
@@ -125,9 +141,10 @@ class SellerFragment : Fragment(), MenuInterface,
         setupAdapter(MainModel.sellerItemList)
     }
 
-    override fun setImage() {
+    override fun clickImage(index:Int) {
         val getImageDialog = GetImageDialog.newInstance(this)
         getImageDialog.show(fragmentManager, "GetImageDialog")
+        selectedItemIndex = index
     }
 
     override fun clickButton(action: GetImageDialog.Action) {
@@ -138,6 +155,8 @@ class SellerFragment : Fragment(), MenuInterface,
     }
 
     private var imageUri:Uri? = null
+    private var corpedImageUri:Uri? = null
+    private var selectedItemIndex = 0
 
     private fun imageCaptureIntent(){
 //        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -162,7 +181,6 @@ class SellerFragment : Fragment(), MenuInterface,
         intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
         startActivityForResult(intent, ACT_INTENT_CAPTURE_IMAGE)
     }
-
 
     private fun imageGetIntent() {
 //        val takePhotoRequest = 0
@@ -197,6 +215,7 @@ class SellerFragment : Fragment(), MenuInterface,
         if(requestCode == ACT_INTENT_CORP_IMAGE && resultCode == RESULT_OK){
             println("ACT_INTENT_CORP_IMAGE")
             println(data)
+            setImage(corpedImageUri,selectedItemIndex)
         }
     }
 
@@ -208,7 +227,7 @@ class SellerFragment : Fragment(), MenuInterface,
         // set cut file
         val cutFile = File(
             //Environment.getExternalStorageDirectory().path,
-            MainModel.tmpExternalFile,"localCutImg.png")
+            MainModel.tmpExternalFile,"localCutImg_" + generateOrderId() + ".png")
 
         try {
             if(cutFile.exists()) cutFile.delete()
@@ -225,6 +244,12 @@ class SellerFragment : Fragment(), MenuInterface,
         // set X/Y ratio
         intent.putExtra("aspectX",1)
         intent.putExtra("aspectY",1)
+
+        //set size in px
+        intent.putExtra("outputX",250)
+        intent.putExtra("outputY",250)
+
+        // return uri
         intent.putExtra("return-data",false)
 
         if (imageUri != null) {
@@ -237,6 +262,11 @@ class SellerFragment : Fragment(), MenuInterface,
         intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString())
 
         startActivityForResult(intent, ACT_INTENT_CORP_IMAGE)
+        corpedImageUri = outputUri
     }
 
+    private fun setImage(uri:Uri?, index:Int){
+        MainModel.sellerItemList[index].picture = uri.toString()
+        (rootView.sellerRecyclerView.adapter as SellerAdapter).currentViewHolder?.updateImage(MainModel.sellerItemList[index])
+    }
 }

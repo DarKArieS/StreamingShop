@@ -1,37 +1,106 @@
 package com.game.aries.streamingshop
 
+import android.animation.Animator
+import android.animation.ObjectAnimator
 import android.content.Context
+import android.graphics.drawable.AnimationDrawable
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import android.support.constraint.ConstraintLayout
 import android.support.v7.app.ActionBar
-import android.view.Menu
-import android.view.MenuItem
-import android.view.MotionEvent
-import android.view.View
+import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.navigation.findNavController
 import com.game.aries.streamingshop.utilities.MenuInterface
 import com.game.aries.streamingshop.model.MainModel
+import kotlinx.android.synthetic.main.loading_layout.view.*
 
 class MainActivity : AppCompatActivity() {
+    lateinit var rootViewGroup : ViewGroup
 
-    // ToDo: sometimes customMenu will be null
     lateinit var customMenu: Menu
     lateinit var mSupportActionBar: ActionBar
     var menuInterface: MenuInterface? = null
+
+    lateinit var loadingView: View
+    private lateinit var transitionAnimEnter: ObjectAnimator
+    private lateinit var transitionAnimExit: ObjectAnimator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val navController = this.findNavController(R.id.navHost)
+//        val navController = this.findNavController(R.id.navHost)
+        initAnimator()
+
 
         MainModel.tmpExternalFile = this.externalCacheDir
-
+        rootViewGroup = window.decorView.rootView as ViewGroup
     }
 
+    private fun initAnimator(){
+        loadingView = this.layoutInflater.inflate(R.layout.loading_layout, null)
+
+        transitionAnimEnter = ObjectAnimator
+            .ofFloat(loadingView, "alpha", 0f, 1f)
+            .setDuration(400)
+
+        transitionAnimEnter.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {
+                MainModel.isLoading = true
+                val params = ConstraintLayout.LayoutParams(
+                    ConstraintLayout.LayoutParams.MATCH_PARENT,
+                    ConstraintLayout.LayoutParams.MATCH_PARENT
+                )
+                rootViewGroup.addView(loadingView,params)
+                (rootViewGroup.loadingAnimator.background as AnimationDrawable).start()
+            }
+            override fun onAnimationEnd(animation: Animator) {}
+            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationRepeat(animation: Animator) {}
+        })
+
+        transitionAnimExit = ObjectAnimator
+            .ofFloat(loadingView, "alpha", 1f, 0f)
+            .setDuration(400)
+
+        transitionAnimExit.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationStart(animation: Animator) {}
+            override fun onAnimationEnd(animation: Animator) {
+                (rootViewGroup.loadingAnimator.background as AnimationDrawable).stop()
+                rootViewGroup.removeView(loadingView)
+                MainModel.isLoading = false
+            }
+            override fun onAnimationCancel(animation: Animator) {}
+            override fun onAnimationRepeat(animation: Animator) {}
+        })
+    }
+
+    fun showLoadingView(loadingString:String="Connecting"){
+        loadingView.loadingTextView.text = loadingString
+        transitionAnimEnter.start()
+    }
+
+    fun hideLoadingView(){
+        transitionAnimExit.start()
+    }
+
+    override fun onPause() {
+        MainModel.mainActivityStatus = MainModel.MainActivityLifeCycle.PAUSE
+        super.onPause()
+        println("onPause")
+    }
+
+    override fun onResume() {
+        MainModel.mainActivityStatus = MainModel.MainActivityLifeCycle.RUNNING
+        super.onResume()
+        println("onResume")
+    }
+
+    // Solved(?) To Do: sometimes customMenu will be null
+    // using on prepare may be better ...
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         customMenu = menu
         mSupportActionBar = supportActionBar!!
@@ -39,9 +108,9 @@ class MainActivity : AppCompatActivity() {
         return super.onPrepareOptionsMenu(menu)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        return super.onCreateOptionsMenu(menu)
-    }
+//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+//        return super.onCreateOptionsMenu(menu)
+//    }
 
     override fun onBackPressed() {
         if(!MainModel.checkIsLoading()){
@@ -55,7 +124,6 @@ class MainActivity : AppCompatActivity() {
                 menuInterface?.actionEdit()
             }
         }
-
         return super.onOptionsItemSelected(item)
     }
 

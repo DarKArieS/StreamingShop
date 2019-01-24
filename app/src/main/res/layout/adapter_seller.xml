@@ -59,7 +59,7 @@
             android:text="修改"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:id="@+id/sellerItemOKButton" android:layout_marginBottom="16dp"
+            android:id="@+id/sellerItemUploadButton" android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="24dp"/>
     <Button
@@ -67,9 +67,9 @@
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:id="@+id/sellerBroadcastItemButton"
-            app:layout_constraintStart_toEndOf="@+id/sellerItemOKButton"
+            app:layout_constraintStart_toEndOf="@+id/sellerItemUploadButton"
             android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/sellerItemOKButton"/>
+            app:layout_constraintBottom_toBottomOf="@+id/sellerItemUploadButton"/>
     <TextView
             android:text="賣出：？"
             android:layout_width="wrap_content"

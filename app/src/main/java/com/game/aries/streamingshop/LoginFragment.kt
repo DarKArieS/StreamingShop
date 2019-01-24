@@ -9,14 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import com.facebook.AccessToken
-import com.facebook.CallbackManager
-import com.facebook.FacebookCallback
-import com.facebook.FacebookException
+import com.facebook.*
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.game.aries.streamingshop.model.MainModel
 import kotlinx.android.synthetic.main.fragment_login.view.*
+import org.json.JSONObject
 
 
 class LoginFragment : Fragment() {
@@ -57,6 +55,33 @@ class LoginFragment : Fragment() {
             }
 
             override fun onSuccess(result: LoginResult?) {
+                //Live Video API Test
+                //POST
+//                val request = GraphRequest.newPostRequest(
+//                    AccessToken.getCurrentAccessToken(),
+//                    "/" +
+//                            AccessToken.getCurrentAccessToken().userId.toString() +
+//                            "/live_videos",
+//                    JSONObject("{\"title\":\"Today's Live Video\",\"description\":\"This is the live video for today.\"}"))
+//                {
+//                    println("Post video test")
+//                    println(it)
+//                }
+//                request.executeAsync()
+                // GET
+//                val request2 = GraphRequest.newGraphPathRequest(
+//                    AccessToken.getCurrentAccessToken(),
+//                    "2132121343476981"
+//                ) { response ->
+//                    println("test live")
+//                    println(response) }
+//
+//                val parameters = Bundle()
+//                parameters.putString("fields", "ingest_streams")
+//                request2.parameters = parameters
+//                request2.executeAsync()
+
+
                 println("result")
                 println(result)
                 println(result?.accessToken)

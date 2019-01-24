@@ -7,13 +7,7 @@ import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.MediaController
 import android.widget.ScrollView
-import com.facebook.GraphRequest
-import com.facebook.GraphResponse
 import com.game.aries.streamingshop.model.MainModel
 import kotlinx.android.synthetic.main.fragment_buyer.view.*
 

@@ -20,8 +20,8 @@ class EditBroadcastDialog : DialogFragment() {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.dialog_edit_broadcast, container, false)
 
-        rootView.broadcastNameEditText.setText(MainModel.broadcastName)
-        rootView.broadcastIDEditText.setText(MainModel.broadcastID)
+        rootView.broadcastNameEditText.setText(MainModel.sellerBroadcast.broadcastName)
+        rootView.broadcastIDEditText.setText(MainModel.sellerBroadcast.broadcastID)
         rootView.dialogEnterButton.setOnClickListener { clickEnter() }
 
         return rootView
@@ -33,8 +33,8 @@ class EditBroadcastDialog : DialogFragment() {
     }
 
     private fun clickEnter(){
-        MainModel.broadcastName = rootView.broadcastNameEditText.text.toString()
-        MainModel.broadcastID = rootView.broadcastIDEditText.text.toString()
+        MainModel.sellerBroadcast.broadcastName = rootView.broadcastNameEditText.text.toString()
+        MainModel.sellerBroadcast.broadcastID = rootView.broadcastIDEditText.text.toString()
         editBroadcast!!.editBroadcast()
         this.dismiss()
     }
