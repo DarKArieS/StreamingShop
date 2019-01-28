@@ -35,6 +35,7 @@ class EditBroadcastDialog : DialogFragment() {
     private fun clickEnter(){
         MainModel.sellerBroadcast.broadcastName = rootView.broadcastNameEditText.text.toString()
         MainModel.sellerBroadcast.broadcastID = rootView.broadcastIDEditText.text.toString()
+        // ToDo: Do parsing here
         editBroadcast!!.editBroadcast()
         this.dismiss()
     }

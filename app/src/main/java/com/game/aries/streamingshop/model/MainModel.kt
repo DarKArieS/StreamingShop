@@ -190,6 +190,68 @@ object MainModel {
         })
     }
 
+    fun updateSellerItemList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .toString()
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/product/preparelist")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("get seller item list")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    //ToDo OK http RunTime Error ="=
+//                    val newSellerItemList = mutableListOf<SellerItem>()
+//                    val dataJsonArray = JSONArray(readJSON.getString("response"))
+//                    for (i in 0 until dataJsonArray.length()-1 ){
+//                        val dataJson = JSONObject(dataJsonArray[i].toString())
+//                        newSellerItemList.add(0,
+//                            SellerItem(
+//                                dataJson.getString("name"),
+//                                dataJson.getInt("price"),
+//                                dataJson.getString("description"),
+//                                dataJson.getString("picture"),
+//                                true,
+//                                dataJson.getInt("id")
+//                            )
+//                        )
+//                    }
+//
+//                    for (old in sellerItemList){
+//                        if (old.isUploaded){
+//                            for ((index,new) in newSellerItemList.withIndex()){
+//                                if (old.uploadedID == new.uploadedID){
+//                                    old.name = new.name
+//                                    old.description = new.description
+//                                    old.picture = new.picture
+//                                    old.price = new.price
+//                                    newSellerItemList.removeAt(index)
+//                                }
+//                            }
+//                        }
+//                    }
+//                    if(newSellerItemList.size>0){
+//                        println("update seller list: add some seller items back from server ...")
+//                        for(new in newSellerItemList) sellerItemList.add(new)
+//                    }
+                }
+                successCallBack()
+            }
+        })
+    }
+
     fun addSellerItem(successCallBack: ()->Unit, failureCallBack: ()->Unit, sellerItem:SellerItem){
         val productJSON = JSONObject()
             .put("name",sellerItem.name)
@@ -214,7 +276,7 @@ object MainModel {
             }
 
             override fun onResponse(call: Call?, response: Response?) {
-                println("set seller item list")
+                println("set seller item")
                 //println(response!!.body()!!.string())
                 val readJSON = JSONObject(response!!.body()!!.string())
                 println(readJSON)
@@ -228,6 +290,70 @@ object MainModel {
         })
     }
 
+    fun modifySellerItem(successCallBack: ()->Unit, failureCallBack: ()->Unit, sellerItem:SellerItem){
+        val productJSON = JSONObject()
+            .put("id",sellerItem.uploadedID)
+            .put("name",sellerItem.name)
+            .put("description",sellerItem.description)
+            .put("price",sellerItem.price.toString())
+            .put("picture","123.png")
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("product",productJSON)
+            .toString()
+        println(myJSON)
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/product/update")
+                .addHeader("Content-Type", "application/json")
+                .put(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("modify seller item list")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                successCallBack()
+            }
+        })
+    }
+
+    fun deleteSellerItem(successCallBack: ()->Unit, failureCallBack: ()->Unit, sellerItem:SellerItem){
+        val productJSON = JSONObject()
+            .put("id",sellerItem.uploadedID)
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("product",productJSON)
+            .toString()
+        println(myJSON)
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/product/set")
+                .addHeader("Content-Type", "application/json")
+                .delete(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("delete seller item")
+                println(response!!.body()!!.string())
+//                val readJSON = JSONObject(response!!.body()!!.string())
+//                println(readJSON)
+                // ToDo Boom！
+                successCallBack()
+            }
+        })
+    }
 //===================================================================================================
 // for buyer page
 //===================================================================================================

@@ -23,6 +23,7 @@ import java.io.File
 import java.lang.Exception
 import android.os.Build
 import android.support.v4.content.FileProvider
+import android.support.v7.widget.RecyclerView
 import android.widget.Toast
 import com.game.aries.streamingshop.dialog.GetImageDialog
 import com.game.aries.streamingshop.utilities.CommunicationManager
@@ -52,8 +53,16 @@ class SellerFragment : Fragment(), MenuInterface,
 
         // setup refresh
         rootView.swipeRefreshLayout.setOnRefreshListener{
-            setupAdapter(MainModel.sellerItemList)
-            rootView.swipeRefreshLayout.isRefreshing=false
+            val cManager = CommunicationManager()
+            cManager.showMessage = "Updating"
+            cManager.communication = { p0,p1->
+                MainModel.updateSellerItemList(p0,p1)
+            }
+            cManager.customCallback = {
+                setupAdapter(MainModel.sellerItemList)
+                rootView.swipeRefreshLayout.isRefreshing=false
+            }
+            cManager.commit(activity as MainActivity)
         }
 
         // setup button
@@ -130,12 +139,10 @@ class SellerFragment : Fragment(), MenuInterface,
         rootView.sellerRecyclerView.scrollToPosition(0)
     }
 
-    override fun adapterSetImage(index:Int) {
+    override fun adapterSetImage(viewHolder: SellerAdapter.ViewHolder) {
         val getImageDialog = GetImageDialog.newInstance(this)
         getImageDialog.show(fragmentManager, "GetImageDialog")
-        selectedItemIndex = index
-
-        (rootView.sellerRecyclerView.adapter as SellerAdapter).currentViewHolder?.adapterPosition
+        currentViewHolder = viewHolder
     }
 
     override fun chooseImageResource(action: GetImageDialog.Action) {
@@ -147,7 +154,7 @@ class SellerFragment : Fragment(), MenuInterface,
 
     private var imageUri:Uri? = null
     private var corpedImageUri:Uri? = null
-    private var selectedItemIndex = 0
+    private var currentViewHolder: SellerAdapter.ViewHolder? = null
 
     private fun imageCaptureIntent(){
 //        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -252,12 +259,12 @@ class SellerFragment : Fragment(), MenuInterface,
         if(requestCode == ACT_INTENT_CORP_IMAGE && resultCode == RESULT_OK){
             println("ACT_INTENT_CORP_IMAGE")
             println(data)
-            setImage(corpedImageUri,selectedItemIndex)
+            updateAdapterImage(corpedImageUri,currentViewHolder!!.adapterPosition)
         }
     }
 
-    private fun setImage(uri:Uri?, index:Int){
+    private fun updateAdapterImage(uri:Uri?, index:Int){
         MainModel.sellerItemList[index].picture = uri.toString()
-        (rootView.sellerRecyclerView.adapter as SellerAdapter).currentViewHolder?.updateImage(MainModel.sellerItemList[index])
+        currentViewHolder!!.updateImage(MainModel.sellerItemList[index])
     }
 }

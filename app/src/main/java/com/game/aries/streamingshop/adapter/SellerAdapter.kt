@@ -17,7 +17,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
     RecyclerView.Adapter<SellerAdapter.ViewHolder>() {
 
     interface AdapterListener{
-        fun adapterSetImage(index:Int)
+        fun adapterSetImage(viewHolder: SellerAdapter.ViewHolder)
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
@@ -31,8 +31,6 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         p0.bind(sellerItemList[p1])
     }
 
-    var currentViewHolder: ViewHolder? = null
-
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView)
     {
         private val sellerProductName = itemView.showProductName
@@ -41,30 +39,12 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         private val deleteButton = itemView.deleteButton
         private val sellerItemUploadButton = itemView.sellerItemUploadButton
         private val showProductImage = itemView.showProductImage
-        private val debug_showIndex = itemView.debug_showIndex
 
         fun bind(sellerItem: SellerItem) {
-
-            debug_showIndex.text = adapterPosition.toString()
-
             initEditText(sellerItem)
-            if(sellerItem.picture!="") updateImage(sellerItem)
-            if(sellerItem.isUploaded) sellerItemUploadButton.text = "修改"
-
-            deleteButton.setOnClickListener{
-                clickDeleteItem()
-            }
-
-            sellerItemUploadButton.setOnClickListener{
-                clickSellerItemUploadButton(sellerItem)
-                // ToDo check item position
-            }
-
-            showProductImage.setOnClickListener {
-                // ToDo check item position
-                currentViewHolder = this
-                listener.adapterSetImage(adapterPosition)
-            }
+            deleteButton.setOnClickListener{ clickDeleteItem(sellerItem) }
+            sellerItemUploadButton.setOnClickListener{ clickSellerItemUploadButton(sellerItem) }
+            showProductImage.setOnClickListener { listener.adapterSetImage(this)}
         }
 
         private fun initEditText(sellerItem: SellerItem){
@@ -75,6 +55,11 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             sellerProductName.setText(sellerItem.name)
             sellerProductPrice.setText(price)
             sellerProductDescription.setText(sellerItem.description)
+
+            showProductImage.setImageResource(R.drawable.ic_add_a_photo_white_24dp)
+            sellerItemUploadButton.text = "新增"
+            if(sellerItem.picture!="") updateImage(sellerItem)
+            if(sellerItem.isUploaded) sellerItemUploadButton.text = "修改"
         }
 
         fun updateImage(sellerItem: SellerItem){
@@ -88,15 +73,23 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
 
         private fun clickSellerItemUploadButton(sellerItem: SellerItem){
             if(!sellerItem.isUploaded) uploadItem(sellerItem)
+            else modifyItem(sellerItem)
         }
 
-        private fun clickDeleteItem(){
-            println("delete")
-            println("adapterPosition"+adapterPosition.toString())
-            println("layoutPosition"+ layoutPosition.toString())
-            println("layoutPosition"+ oldPosition.toString())
-            sellerItemList.removeAt(adapterPosition)
-            notifyItemRemoved(adapterPosition)
+        private fun clickDeleteItem(sellerItem: SellerItem){
+            if(sellerItem.isUploaded){
+                val cManager = CommunicationManager()
+                cManager.showMessage = "Deleting"
+                cManager.communication = { p0,p1->
+                    MainModel.deleteSellerItem(p0,p1,sellerItem)
+                }
+                cManager.customCallback={
+                    sellerItemList.removeAt(adapterPosition)
+                    notifyItemRemoved(adapterPosition)
+                }
+                cManager.commit(currentActivity)
+            }
+
         }
 
         fun uploadItem(sellerItem: SellerItem){
@@ -114,6 +107,22 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
             cManager.customCallback = {
                 sellerItemUploadButton.text = "修改"
+            }
+            cManager.commit(currentActivity)
+        }
+
+        fun modifyItem(sellerItem: SellerItem){
+            sellerItem.name = sellerProductName.editableText.toString()
+            if(sellerProductPrice.editableText.toString()!="")
+                sellerItem.price= sellerProductPrice.editableText.toString().toInt()
+            else sellerItem.price = 0
+            sellerItem.description= sellerProductDescription.editableText.toString()
+
+            val cManager = CommunicationManager()
+            cManager.showMessage = "Uploading"
+            val imageUri = Uri.parse(sellerItem.picture)
+            cManager.communication = { p0,p1->
+                MainModel.modifySellerItem(p0,p1,sellerItem)
             }
             cManager.commit(currentActivity)
         }
