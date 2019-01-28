@@ -48,9 +48,6 @@ class SellerFragment : Fragment(), MenuInterface,
         MainModel.loadSellerInfo(activity as ContextWrapper)
 
         // setup adapter
-        MainModel.sellerItemList = mutableListOf(
-            SellerItem()
-        )
         setupAdapter(MainModel.sellerItemList)
 
         // setup refresh
@@ -60,7 +57,7 @@ class SellerFragment : Fragment(), MenuInterface,
         }
 
         // setup button
-        rootView.addItemFloatingActionButton.setOnClickListener { clickAddItem() }
+        rootView.addItemFloatingActionButton.setOnClickListener { clickAddItemFloatingActionButton() }
         rootView.startStreamFloatingActionButton.setOnClickListener{ clickStartStreamFloatingActionButton() }
 
         return rootView
@@ -68,13 +65,29 @@ class SellerFragment : Fragment(), MenuInterface,
 
     override fun onResume() {
         super.onResume()
-        setSellerFragment(true)
+        setSellerFragmentActionBar(true)
     }
 
     override fun onStop() {
         super.onStop()
-        setSellerFragment(false)
+        setSellerFragmentActionBar(false)
         MainModel.saveSellerInfo(activity as ContextWrapper)
+    }
+
+    private fun setSellerFragmentActionBar(setTrue:Boolean){
+        when(setTrue){
+            true->{
+                checkBroadcastID()
+                (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
+                (activity as MainActivity).mSupportActionBar.title = MainModel.sellerBroadcast.broadcastName
+                (activity as MainActivity).menuInterface = this
+            }
+            false->{
+                (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = false
+                (activity as MainActivity).mSupportActionBar.title = getString(R.string.app_name)
+                (activity as MainActivity).menuInterface = null
+            }
+        }
     }
 
     override fun actionEdit(){
@@ -97,6 +110,11 @@ class SellerFragment : Fragment(), MenuInterface,
         }
     }
 
+    private fun setupAdapter(itemList:MutableList<SellerItem>) {
+        rootView.sellerRecyclerView.adapter = SellerAdapter(this.context!!, itemList, this, activity as MainActivity)
+        rootView.sellerRecyclerView.layoutManager = LinearLayoutManager(this.context!!)
+    }
+
     private fun clickStartStreamFloatingActionButton(){
         if (MainModel.sellerBroadcast.broadcastID.length>=15){
             val cManager = CommunicationManager()
@@ -106,44 +124,21 @@ class SellerFragment : Fragment(), MenuInterface,
         }
     }
 
-    private fun setSellerFragment(setTrue:Boolean){
-        when(setTrue){
-            true->{
-                checkBroadcastID()
-                (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
-                (activity as MainActivity).mSupportActionBar.title = MainModel.sellerBroadcast.broadcastName
-                (activity as MainActivity).menuInterface = this
-            }
-            false->{
-                (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = false
-                (activity as MainActivity).mSupportActionBar.title = getString(R.string.app_name)
-                (activity as MainActivity).menuInterface = null
-            }
-        }
-    }
-
-    private fun setupAdapter(itemList:List<SellerItem>) {
-        rootView.sellerRecyclerView.adapter = SellerAdapter(this.context!!, itemList, this, activity as MainActivity)
-        rootView.sellerRecyclerView.layoutManager = LinearLayoutManager(this.context!!)
-    }
-
-    private fun clickAddItem(){
+    private fun clickAddItemFloatingActionButton(){
         MainModel.sellerItemList.add(0, SellerItem())
-        setupAdapter(MainModel.sellerItemList)
+        rootView.sellerRecyclerView.adapter?.notifyItemRangeInserted(0,1)
+        rootView.sellerRecyclerView.scrollToPosition(0)
     }
 
-    override fun deleteItem(index: Int) {
-        MainModel.sellerItemList.removeAt(index)
-        setupAdapter(MainModel.sellerItemList)
-    }
-
-    override fun clickImage(index:Int) {
+    override fun adapterSetImage(index:Int) {
         val getImageDialog = GetImageDialog.newInstance(this)
         getImageDialog.show(fragmentManager, "GetImageDialog")
         selectedItemIndex = index
+
+        (rootView.sellerRecyclerView.adapter as SellerAdapter).currentViewHolder?.adapterPosition
     }
 
-    override fun clickButton(action: GetImageDialog.Action) {
+    override fun chooseImageResource(action: GetImageDialog.Action) {
         when(action){
             GetImageDialog.Action.CAMERA->imageCaptureIntent()
             GetImageDialog.Action.ALBUM->imageGetIntent()
@@ -187,32 +182,6 @@ class SellerFragment : Fragment(), MenuInterface,
         val intent = Intent(Intent.ACTION_PICK)
         intent.data = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         startActivityForResult(intent, ACT_INTENT_GET_IMAGE)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(resultCode == RESULT_CANCELED){
-            imageUri = null
-        }
-
-        if(requestCode == ACT_INTENT_GET_IMAGE && resultCode == RESULT_OK){
-            println("ACT_INTENT_GET_IMAGE")
-            imageUri = data?.data
-            println(imageUri)
-            imageCorpIntent()
-        }
-
-        if(requestCode == ACT_INTENT_CAPTURE_IMAGE && resultCode == RESULT_OK){
-            println("ACT_INTENT_CAPTURE_IMAGE")
-            println(imageUri)
-            imageCorpIntent(true)
-        }
-
-        if(requestCode == ACT_INTENT_CORP_IMAGE && resultCode == RESULT_OK){
-            println("ACT_INTENT_CORP_IMAGE")
-            println(data)
-            setImage(corpedImageUri,selectedItemIndex)
-        }
     }
 
     private fun imageCorpIntent(isFromCamera: Boolean = false){
@@ -259,6 +228,32 @@ class SellerFragment : Fragment(), MenuInterface,
 
         startActivityForResult(intent, ACT_INTENT_CORP_IMAGE)
         corpedImageUri = outputUri
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(resultCode == RESULT_CANCELED){
+            imageUri = null
+        }
+
+        if(requestCode == ACT_INTENT_GET_IMAGE && resultCode == RESULT_OK){
+            println("ACT_INTENT_GET_IMAGE")
+            imageUri = data?.data
+            println(imageUri)
+            imageCorpIntent()
+        }
+
+        if(requestCode == ACT_INTENT_CAPTURE_IMAGE && resultCode == RESULT_OK){
+            println("ACT_INTENT_CAPTURE_IMAGE")
+            println(imageUri)
+            imageCorpIntent(true)
+        }
+
+        if(requestCode == ACT_INTENT_CORP_IMAGE && resultCode == RESULT_OK){
+            println("ACT_INTENT_CORP_IMAGE")
+            println(data)
+            setImage(corpedImageUri,selectedItemIndex)
+        }
     }
 
     private fun setImage(uri:Uri?, index:Int){

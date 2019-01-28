@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.navigation.findNavController
 import com.facebook.AccessToken
 import com.facebook.login.LoginManager
+import com.game.aries.streamingshop.model.MainModel
+import com.game.aries.streamingshop.utilities.CommunicationManager
 import kotlinx.android.synthetic.main.fragment_title.view.*
 
 
@@ -59,8 +61,16 @@ class TitleFragment : Fragment() {
     }
 
     private fun clickSellerButton(){
-        (activity as MainActivity).findNavController(R.id.navHost)
-            .navigate(TitleFragmentDirections.actionTitleFragmentToSellerFragment())
+        val cManager = CommunicationManager()
+        cManager.communication = { p0,p1->
+            MainModel.getSellerItemList(p0, p1)
+//            Thread{p0.invoke()}.start()
+        }
+        cManager.navigation = {
+            (activity as MainActivity).findNavController(R.id.navHost)
+                .navigate(TitleFragmentDirections.actionTitleFragmentToSellerFragment())
+        }
+        cManager.commit(activity as MainActivity)
     }
 
     private fun clickLogoutButton(){

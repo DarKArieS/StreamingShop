@@ -3,14 +3,12 @@ package com.game.aries.streamingshop.model
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.SharedPreferences
-import android.text.format.DateFormat
 import com.facebook.AccessToken
 import okhttp3.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
-import com.game.aries.streamingshop.utilities.CommunicationManager
-import java.util.*
 
 object MainModel {
     var tmpExternalFile : File? = null
@@ -148,6 +146,87 @@ object MainModel {
     }
 
     lateinit var sellerItemList : MutableList<SellerItem>
+
+    fun getSellerItemList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .toString()
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/product/preparelist")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("get seller item list")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    sellerItemList = mutableListOf()
+                    val dataJsonArray = JSONArray(readJSON.getString("response"))
+                    for (i in 0 until dataJsonArray.length()-1 ){
+                        val dataJson = JSONObject(dataJsonArray[i].toString())
+                        sellerItemList.add(0,
+                            SellerItem(
+                                dataJson.getString("name"),
+                                dataJson.getInt("price"),
+                                dataJson.getString("description"),
+                                dataJson.getString("picture"),
+                                true,
+                                dataJson.getInt("id")
+                            )
+                        )
+                    }
+                }
+                successCallBack()
+            }
+        })
+    }
+
+    fun addSellerItem(successCallBack: ()->Unit, failureCallBack: ()->Unit, sellerItem:SellerItem){
+        val productJSON = JSONObject()
+            .put("name",sellerItem.name)
+            .put("description",sellerItem.description)
+            .put("price",sellerItem.price.toString())
+            .put("picture","123.png")
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("product",productJSON)
+            .toString()
+        println(myJSON)
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/product/set")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("set seller item list")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    val responseJSON = JSONObject(readJSON.getString("response"))
+                    sellerItem.isUploaded = true
+                    sellerItem.uploadedID = responseJSON.getInt("id")
+                }
+                successCallBack()
+            }
+        })
+    }
 
 //===================================================================================================
 // for buyer page

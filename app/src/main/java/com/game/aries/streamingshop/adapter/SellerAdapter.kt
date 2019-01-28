@@ -13,12 +13,11 @@ import com.game.aries.streamingshop.R
 import com.game.aries.streamingshop.model.MainModel
 import com.game.aries.streamingshop.utilities.CommunicationManager
 
-class SellerAdapter (val context: Context, var sellerItemList: List<SellerItem>, val listener: AdapterListener, var currentActivity: MainActivity):
+class SellerAdapter (val context: Context, var sellerItemList: MutableList<SellerItem>, val listener: AdapterListener, var currentActivity: MainActivity):
     RecyclerView.Adapter<SellerAdapter.ViewHolder>() {
 
     interface AdapterListener{
-        fun deleteItem(index:Int)
-        fun clickImage(index:Int)
+        fun adapterSetImage(index:Int)
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
@@ -29,7 +28,7 @@ class SellerAdapter (val context: Context, var sellerItemList: List<SellerItem>,
     override fun getItemCount(): Int = this.sellerItemList.count()
 
     override fun onBindViewHolder(p0: ViewHolder, p1: Int) {
-        p0.bind(p1, sellerItemList[p1])
+        p0.bind(sellerItemList[p1])
     }
 
     var currentViewHolder: ViewHolder? = null
@@ -42,22 +41,29 @@ class SellerAdapter (val context: Context, var sellerItemList: List<SellerItem>,
         private val deleteButton = itemView.deleteButton
         private val sellerItemUploadButton = itemView.sellerItemUploadButton
         private val showProductImage = itemView.showProductImage
+        private val debug_showIndex = itemView.debug_showIndex
 
-        fun bind(index:Int, sellerItem: SellerItem) {
+        fun bind(sellerItem: SellerItem) {
+
+            debug_showIndex.text = adapterPosition.toString()
+
             initEditText(sellerItem)
             if(sellerItem.picture!="") updateImage(sellerItem)
+            if(sellerItem.isUploaded) sellerItemUploadButton.text = "修改"
 
             deleteButton.setOnClickListener{
-                listener.deleteItem(index)
+                clickDeleteItem()
             }
 
             sellerItemUploadButton.setOnClickListener{
-                uploadItem(sellerItem)
+                clickSellerItemUploadButton(sellerItem)
+                // ToDo check item position
             }
 
             showProductImage.setOnClickListener {
-                listener.clickImage(index)
+                // ToDo check item position
                 currentViewHolder = this
+                listener.adapterSetImage(adapterPosition)
             }
         }
 
@@ -72,11 +78,25 @@ class SellerAdapter (val context: Context, var sellerItemList: List<SellerItem>,
         }
 
         fun updateImage(sellerItem: SellerItem){
-            println("set viewholder image!")
+//            println("set viewholder image!")
+//            println(sellerItem)
             if(!sellerItem.isUploaded){
                 val imageUri = Uri.parse(sellerItem.picture)
             showProductImage.setImageURI(imageUri)
             }
+        }
+
+        private fun clickSellerItemUploadButton(sellerItem: SellerItem){
+            if(!sellerItem.isUploaded) uploadItem(sellerItem)
+        }
+
+        private fun clickDeleteItem(){
+            println("delete")
+            println("adapterPosition"+adapterPosition.toString())
+            println("layoutPosition"+ layoutPosition.toString())
+            println("layoutPosition"+ oldPosition.toString())
+            sellerItemList.removeAt(adapterPosition)
+            notifyItemRemoved(adapterPosition)
         }
 
         fun uploadItem(sellerItem: SellerItem){
@@ -87,8 +107,15 @@ class SellerAdapter (val context: Context, var sellerItemList: List<SellerItem>,
             sellerItem.description= sellerProductDescription.editableText.toString()
 
             val cManager = CommunicationManager()
+            cManager.showMessage = "Uploading"
             val imageUri = Uri.parse(sellerItem.picture)
-
+            cManager.communication = { p0,p1->
+                MainModel.addSellerItem(p0,p1,sellerItem)
+            }
+            cManager.customCallback = {
+                sellerItemUploadButton.text = "修改"
+            }
+            cManager.commit(currentActivity)
         }
     }
 }

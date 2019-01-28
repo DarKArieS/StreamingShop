@@ -3,13 +3,16 @@ package com.game.aries.streamingshop
 import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.drawable.AnimationDrawable
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import android.os.PersistableBundle
 import android.support.constraint.ConstraintLayout
-import android.support.v4.app.Fragment
+import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
+import android.support.v7.app.ActionBarDrawerToggle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -24,6 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var customMenu: Menu
     lateinit var mSupportActionBar: ActionBar
+    lateinit var drawerToggle: ActionBarDrawerToggle
     var menuInterface: MenuInterface? = null
 
     lateinit var loadingView: View
@@ -37,13 +41,30 @@ class MainActivity : AppCompatActivity() {
         val navController = this.findNavController(R.id.navHost)
 
         initAnimator()
+        initNavigationDrawer()
 
         MainModel.tmpExternalFile = this.externalCacheDir
         rootViewGroup = window.decorView.rootView as ViewGroup
+
+        println("MainActivity onCreate")
+    }
+
+    private fun initNavigationDrawer(){
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED,navDrawer_right)
+
+        navDrawer_left.setNavigationItemSelectedListener { menuItem ->
+            drawerLayout.closeDrawers()
+
+            when(menuItem.itemId){
+                R.id.drawer_setting->{println("click drawer setting")}
+            }
+            true
+        }
     }
 
     private fun initAnimator(){
         loadingView = this.layoutInflater.inflate(R.layout.loading_layout, null)
+        loadingView.setOnTouchListener { _,_ ->  true} // block touch event
 
         transitionAnimEnter = ObjectAnimator
             .ofFloat(loadingView, "alpha", 0f, 0.5f)
@@ -102,34 +123,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Solved(?) To Do: sometimes customMenu will be null
-    // using on prepare may be better ...
+    // switch using "onPrepareOptionsMenu" may be better than "onCreateOptionsMenu"...
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         customMenu = menu
         mSupportActionBar = supportActionBar!!
         menuInflater.inflate(R.menu.custom_action_bar, customMenu)
+
+        drawerToggle = ActionBarDrawerToggle(
+            this, drawerLayout, R.string.app_name, R.string.app_name)
+
+        drawerLayout.addDrawerListener(drawerToggle)
+        mSupportActionBar.setDisplayHomeAsUpEnabled(true)
+        mSupportActionBar.setHomeButtonEnabled(true)
+        drawerToggle.syncState()
+
+        println("MainActivity onPrepareOptionsMenu")
         return super.onPrepareOptionsMenu(menu)
     }
 
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        return super.onCreateOptionsMenu(menu)
-//    }
-
-
-
-    interface BackPressedManager{
-        fun onBackPressed(): Boolean
+    override fun onPostCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
+        super.onPostCreate(savedInstanceState, persistentState)
+        drawerToggle.syncState()
     }
 
-    override fun onBackPressed() {
-        if(!MainModel.checkIsLoading()){
-            val currentFragment= navHost.childFragmentManager.fragments[0]
-            if (currentFragment is BackPressedManager){
-                if(!(currentFragment as BackPressedManager).onBackPressed()){
-                    super.onBackPressed()
-                }
-            }else{super.onBackPressed()}
-
-        }
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        drawerToggle.onConfigurationChanged(newConfig)
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -138,7 +157,37 @@ class MainActivity : AppCompatActivity() {
                 menuInterface?.actionEdit()
             }
         }
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            // 防止兩邊的Drawer都被打開
+//            if (drawerLayout.isDrawerOpen(Gravity.END)){
+//                drawerLayout.closeDrawer(Gravity.END)
+//            }
+            return true
+        }
+
         return super.onOptionsItemSelected(item)
+    }
+
+    interface BackPressedManager{
+        fun onBackPressed(): Boolean
+    }
+
+    override fun onBackPressed() {
+        if(!MainModel.checkIsLoading()){
+            if (drawerLayout.isDrawerOpen(navDrawer_left)){
+                drawerLayout.closeDrawer(navDrawer_left)
+                return
+            }
+
+            val currentFragment= navHost.childFragmentManager.fragments[0]
+            if (currentFragment is BackPressedManager){
+                if(!(currentFragment as BackPressedManager).onBackPressed()){
+                    super.onBackPressed()
+                }
+            }else{
+                super.onBackPressed()
+            }
+        }
     }
 
     //===================================================================================

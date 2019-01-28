@@ -22,11 +22,11 @@ class GetImageDialog : DialogFragment() {
         rootView = inflater.inflate(R.layout.dialog_get_image, container, false)
 
         rootView.albumButton.setOnClickListener {
-            dialogListener!!.clickButton(Action.ALBUM)
+            dialogListener!!.chooseImageResource(Action.ALBUM)
             this.dismiss()
         }
         rootView.cameraButton.setOnClickListener {
-            dialogListener!!.clickButton(Action.CAMERA)
+            dialogListener!!.chooseImageResource(Action.CAMERA)
             this.dismiss()
         }
 
@@ -35,7 +35,7 @@ class GetImageDialog : DialogFragment() {
 
     var dialogListener: DialogListener? = null
     interface DialogListener{
-        fun clickButton(action:Action)
+        fun chooseImageResource(action:Action)
     }
 
     companion object {
