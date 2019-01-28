@@ -8,7 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
+import androidx.navigation.navOptions
 import com.facebook.*
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
@@ -31,15 +33,8 @@ class LoginFragment : Fragment() {
         rootView = inflater.inflate(R.layout.fragment_login, container, false)
         navController = (activity as MainActivity).findNavController(R.id.navHost)
 
-        val isLoggedIn = AccessToken.getCurrentAccessToken() != null && !AccessToken.getCurrentAccessToken().isExpired()
-        if(isLoggedIn){
-            navController.navigate(LoginFragmentDirections.actionLoginFragmentToTitleFragmentNoAnim())
-//            navController.graph.re
-
-            rootView.continueButton.visibility = View.VISIBLE
-        }
-
-        rootView.continueButton.setOnClickListener { clickContinueButton() }
+        val isFBLoggedIn = AccessToken.getCurrentAccessToken() != null && !AccessToken.getCurrentAccessToken().isExpired
+        if(isFBLoggedIn) login()
 
         rootView.login_button.setReadPermissions("email")
 //        rootView.login_button.setPublishPermissions("publish_video")
@@ -104,7 +99,6 @@ class LoginFragment : Fragment() {
             }
         })
 
-
         return rootView
     }
 
@@ -113,18 +107,25 @@ class LoginFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun clickContinueButton(){
-        navController.navigate(LoginFragmentDirections.actionLoginFragmentToTitleFragment())
-    }
-
     private fun login(){
         val cManager = CommunicationManager()
-        cManager.communication = {
-                p0,p1,_->
-            MainModel.IsFirstLogin(p0, p1)
+        cManager.communication = { p0,p1->
+            MainModel.checkIsFirstLogin(p0, p1)
+//            Thread{p0.invoke()}.start()
         }
         cManager.navigation = {
-            navController.navigate(LoginFragmentDirections.actionLoginFragmentToTitleFragment())
+            if (MainModel.isFirstLogin){
+                navController.navigate(LoginFragmentDirections.actionLoginFragmentToUserInfoFragment())
+            }else{
+                navController.navigate(LoginFragmentDirections.actionLoginFragmentToTitleFragment())
+            }
+
+//            val navOpt = NavOptions.Builder().apply{println("XDD")}
+//                .setPopEnterAnim(R.anim.slide_in_left)
+//                .setPopExitAnim(R.anim.slide_out_right)
+//                .build()
+//            navController.navigate(LoginFragmentDirections.actionLoginFragmentToUserInfoFragment())
+
         }
         cManager.commit(activity as MainActivity)
     }

@@ -9,19 +9,24 @@
     </fragment>
     <fragment android:id="@+id/loginFragment" android:name="com.game.aries.streamingshop.LoginFragment"
               android:label="fragment_login" tools:layout="@layout/fragment_login">
+
         <action android:id="@+id/action_loginFragment_to_titleFragment" app:destination="@id/titleFragment"
                 app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
                 app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"
                 app:popUpTo="@+id/navigation" app:popUpToInclusive="true"/>
-        <action android:id="@+id/action_loginFragment_to_titleFragment_noAnim" app:destination="@id/titleFragment"
-                app:popUpTo="@+id/navigation" app:popUpToInclusive="true"/>
+
+        <action android:id="@+id/action_loginFragment_to_userInfoFragment" app:destination="@id/userInfoFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left"/>
+
     </fragment>
     <fragment android:id="@+id/titleFragment" android:name="com.game.aries.streamingshop.TitleFragment"
               android:label="fragment_title" tools:layout="@layout/fragment_title">
         <action android:id="@+id/action_titleFragment_to_loginFragment" app:destination="@id/loginFragment"
-                app:popUpTo="@+id/navigation" app:popUpToInclusive="true" app:enterAnim="@anim/slide_in_left"
-                app:exitAnim="@anim/slide_out_right" app:popEnterAnim="@anim/slide_in_right"
-                app:popExitAnim="@anim/slide_out_left"/>
+                app:popUpTo="@+id/navigation" app:popUpToInclusive="true"
+                app:enterAnim="@anim/slide_in_left" app:exitAnim="@anim/slide_out_right"
+                app:popEnterAnim="@anim/slide_in_right" app:popExitAnim="@anim/slide_out_left"/>
+
         <action android:id="@+id/action_titleFragment_to_sellerFragment" app:destination="@id/sellerFragment"
                 app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
                 app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"/>
@@ -38,5 +43,14 @@
                 app:enterAnim="@anim/slide_in_right" app:exitAnim="@anim/slide_out_left"
                 app:popEnterAnim="@anim/slide_in_left" app:popExitAnim="@anim/slide_out_right"
                 app:destination="@id/buyerFragment"/>
+    </fragment>
+    <fragment android:id="@+id/userInfoFragment" android:name="com.game.aries.streamingshop.UserInfoFragment"
+              android:label="fragment_user_info" tools:layout="@layout/fragment_user_info">
+        <action android:id="@+id/action_userInfoFragment_to_loginFragment" app:destination="@id/loginFragment"
+                app:popUpTo="@+id/navigation" app:popUpToInclusive="true" app:enterAnim="@anim/slide_in_left"
+                app:exitAnim="@anim/slide_out_right" app:launchSingleTop="false"/>
+        <action android:id="@+id/action_userInfoFragment_to_titleFragment" app:destination="@id/titleFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left" app:popUpTo="@+id/navigation" app:popUpToInclusive="true"/>
     </fragment>
 </navigation>

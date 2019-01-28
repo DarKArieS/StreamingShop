@@ -100,11 +100,7 @@ class SellerFragment : Fragment(), MenuInterface,
     private fun clickStartStreamFloatingActionButton(){
         if (MainModel.sellerBroadcast.broadcastID.length>=15){
             val cManager = CommunicationManager()
-            cManager.communication = {
-                p0,p1,_->
-                MainModel.ttnCreateBroadcast(p0, p1)
-            }
-            cManager.commit(activity as MainActivity)
+
         }else{
             Toast.makeText(activity as MainActivity, "請輸入Facebook 直播ID", Toast.LENGTH_SHORT).show()
         }

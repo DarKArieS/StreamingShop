@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.support.constraint.ConstraintLayout
+import android.support.v4.app.Fragment
 import android.support.v7.app.ActionBar
 import android.view.*
 import android.view.inputmethod.InputMethodManager
@@ -15,6 +16,7 @@ import android.widget.EditText
 import androidx.navigation.findNavController
 import com.game.aries.streamingshop.utilities.MenuInterface
 import com.game.aries.streamingshop.model.MainModel
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.loading_layout.view.*
 
 class MainActivity : AppCompatActivity() {
@@ -32,9 +34,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        val navController = this.findNavController(R.id.navHost)
-        initAnimator()
+        val navController = this.findNavController(R.id.navHost)
 
+        initAnimator()
 
         MainModel.tmpExternalFile = this.externalCacheDir
         rootViewGroup = window.decorView.rootView as ViewGroup
@@ -44,8 +46,8 @@ class MainActivity : AppCompatActivity() {
         loadingView = this.layoutInflater.inflate(R.layout.loading_layout, null)
 
         transitionAnimEnter = ObjectAnimator
-            .ofFloat(loadingView, "alpha", 0f, 1f)
-            .setDuration(400)
+            .ofFloat(loadingView, "alpha", 0f, 0.5f)
+            .setDuration(200)
 
         transitionAnimEnter.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {
@@ -63,8 +65,8 @@ class MainActivity : AppCompatActivity() {
         })
 
         transitionAnimExit = ObjectAnimator
-            .ofFloat(loadingView, "alpha", 1f, 0f)
-            .setDuration(400)
+            .ofFloat(loadingView, "alpha", 0.5f, 0f)
+            .setDuration(200)
 
         transitionAnimExit.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
@@ -112,9 +114,21 @@ class MainActivity : AppCompatActivity() {
 //        return super.onCreateOptionsMenu(menu)
 //    }
 
+
+
+    interface BackPressedManager{
+        fun onBackPressed(): Boolean
+    }
+
     override fun onBackPressed() {
         if(!MainModel.checkIsLoading()){
-            super.onBackPressed()
+            val currentFragment= navHost.childFragmentManager.fragments[0]
+            if (currentFragment is BackPressedManager){
+                if(!(currentFragment as BackPressedManager).onBackPressed()){
+                    super.onBackPressed()
+                }
+            }else{super.onBackPressed()}
+
         }
     }
 

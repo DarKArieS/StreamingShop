@@ -14,8 +14,8 @@ import java.util.*
 
 object MainModel {
     var tmpExternalFile : File? = null
-    const val ttnbackendUrl = "http://52.193.236.190/"
-    const val backendUrl = "https://livevideoseller.sckao.space/"
+    private const val backendUrl = "https://livevideoseller.sckao.space/"
+//    private const val backendUrl = "https://f3171659.ngrok.io/"
 
     enum class MainActivityLifeCycle {
         RUNNING, PAUSE
@@ -35,21 +35,30 @@ object MainModel {
 //===================================================================================================
 
     var isFirstLogin = false
+    var userInfo = UserInfo(0,"","","")
 
-    fun IsFirstLogin(successCallBack: ()->Unit, failureCallBack: ()->Unit,
-                     arguments: CommunicationManager.CommunicationArguments?=null){
-        val requestBody: RequestBody =
-            MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("token", AccessToken.getCurrentAccessToken().token)
-            .addFormDataPart("expired_time", (AccessToken.getCurrentAccessToken().expires.time/1000).toString())
-            .addFormDataPart("device", "Android")
-            .build()
+    fun checkIsFirstLogin(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+        val myJSON = JSONObject()
+            .put("token",AccessToken.getCurrentAccessToken().token)
+            .put("expired_time", (AccessToken.getCurrentAccessToken().expires.time/1000).toString())
+            .put("device","Android").toString()
+
+        println(myJSON)
+
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+
+//        val requestBody: RequestBody =
+//            MultipartBody.Builder()
+//            .setType(MultipartBody.FORM)
+//            .addFormDataPart("token", AccessToken.getCurrentAccessToken().token)
+//            .addFormDataPart("expired_time", (AccessToken.getCurrentAccessToken().expires.time/1000).toString())
+//            .addFormDataPart("device", "Android")
+//            .build()
 
         val request =
             Request.Builder().url(backendUrl + "api/login")
             .addHeader("Content-Type", "application/json")
-            .post(requestBody)
+            .post(myJSONRequestBody)
             .build()
 
         OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
@@ -58,22 +67,73 @@ object MainModel {
             }
 
             override fun onResponse(call: Call?, response: Response?) {
-//                val readJSON = JSONObject(response!!.body()!!.string())
-//                println(readJSON)
-
-                println(response!!.body()!!.string())
-
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result") == "True"){
+                    val userInfoJSON = JSONObject(readJSON.getString("response"))
+                    //println(userInfoJSON.getString("name"))
+                    isFirstLogin = (userInfoJSON.getString("phone")=="null")
+                    if(!isFirstLogin){
+                        userInfo.id = userInfoJSON.getString("id").toInt()
+                        userInfo.name = userInfoJSON.getString("name")
+                        userInfo.phone = userInfoJSON.getString("phone")
+                        userInfo.address = userInfoJSON.getString("address")
+                    }else{
+                        println("is First Login!")
+                    }
+                }
                 successCallBack()
             }
         })
+    }
 
+    fun putUserInfo(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+        println(userInfo.name)
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("name", userInfo.name)
+            .put("phone", userInfo.phone)
+            .put("address", userInfo.address)
+            .toString()
+
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+
+//        val requestBody: RequestBody =
+//            MultipartBody.Builder()
+//                .setType(MultipartBody.FORM)
+//                .addFormDataPart("token", AccessToken.getCurrentAccessToken().token)
+//                .addFormDataPart("name", userInfo.name)
+//                .addFormDataPart("phone", userInfo.phone)
+//                .addFormDataPart("address", userInfo.address)
+//                .build()
+
+        val request =
+            Request.Builder().url(backendUrl + "api/user/update")
+                .addHeader("Content-Type", "application/json")
+//                .put(requestBody)
+                .put(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                //val readJSON = JSONObject(response!!.body()!!.string())
+                //println(readJSON)
+                println(response!!.body()!!.string())
+                successCallBack()
+            }
+        })
     }
 
 //===================================================================================================
 // for seller page
 //===================================================================================================
-    private val SF_SELLER = "SF_SELLER"
-    private val SF_BROADCAST_NAME = "SF_BROADCAST_NAME"
+    private const val SF_SELLER = "SF_SELLER"
+    private const val SF_BROADCAST_NAME = "SF_BROADCAST_NAME"
 
     val sellerBroadcast = Broadcast("我的直播拍賣","")
 
@@ -88,76 +148,6 @@ object MainModel {
     }
 
     lateinit var sellerItemList : MutableList<SellerItem>
-
-    var ttnStreamingID : Int = 0
-    fun ttnCreateBroadcast(successCallBack: ()->Unit, failureCallBack: ()->Unit,
-                           arguments: CommunicationManager.CommunicationArguments?=null
-                           ) {
-        val time = Calendar.getInstance().time
-        val date = DateFormat.format("yyyy-MM-dd",time).toString()
-
-        val multiBody = MultipartBody.Builder()
-        multiBody.setType(MultipartBody.FORM)
-        multiBody.addFormDataPart("title", "XD streaming")
-        multiBody.addFormDataPart("url", "https://www.facebook.com/facebook/videos/2487357224613465")
-        multiBody.addFormDataPart("played_at", date)
-        val requestBody = multiBody.build() as RequestBody
-//        val url = Resources.getSystem().getString(R.string.URL) + "api/streams"
-//        println(url)
-        val request = Request.Builder().url(ttnbackendUrl + "api/streams")
-            .addHeader("Content-Type", "application/json")
-            .post(requestBody)
-            .build()
-
-        val client: OkHttpClient = OkHttpClient().newBuilder().build()
-        val call = client.newCall(request)
-        call.enqueue(object: Callback {
-            override fun onFailure(call: Call?, e: IOException?) {
-                failureCallBack()
-            }
-            override fun onResponse(call: Call?, response: Response?) {
-                val readJSON = JSONObject(response!!.body()!!.string())
-                println(readJSON)
-                successCallBack()
-                ttnStreamingID = readJSON.getJSONObject("data").getInt("id")
-            }
-        })
-
-    }
-
-    fun ttnUploadPhoto(successCallBack: ()->Unit, failureCallBack: ()->Unit,
-                    arguments: CommunicationManager.TtNUploadPhoto){
-        val file = File(arguments.uri?.path)
-        val mediaType = MediaType.parse("image/png")
-        val multiBody = MultipartBody.Builder()
-
-        multiBody.setType(MultipartBody.FORM)
-        multiBody.addFormDataPart("stream_id", ttnStreamingID.toString())
-        multiBody.addFormDataPart("name", "myProduct")
-        multiBody.addFormDataPart("price", "100")
-        multiBody.addFormDataPart("picture", file.name, RequestBody.create(mediaType, file))
-
-        val requestBody = multiBody.build() as RequestBody
-
-//        val request = Request.Builder().url(R.string.URL.toString() + "api/merchandises")
-        val request = Request.Builder().url(ttnbackendUrl + "api/merchandises")
-            .addHeader("Content-Type", "application/json")
-            .post(requestBody)
-            .build()
-
-        val client: OkHttpClient = OkHttpClient().newBuilder().build()
-        val call = client.newCall(request)
-        call.enqueue(object: Callback {
-            override fun onFailure(call: Call?, e: IOException?) {
-                failureCallBack()
-            }
-            override fun onResponse(call: Call?, response: Response?) {
-                val readJSON = JSONObject(response!!.body()!!.string())
-                println(readJSON)
-                successCallBack()
-            }
-        })
-    }
 
 //===================================================================================================
 // for buyer page

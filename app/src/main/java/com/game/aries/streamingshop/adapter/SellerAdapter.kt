@@ -88,12 +88,7 @@ class SellerAdapter (val context: Context, var sellerItemList: List<SellerItem>,
 
             val cManager = CommunicationManager()
             val imageUri = Uri.parse(sellerItem.picture)
-            cManager.arguments = CommunicationManager.TtNUploadPhoto(imageUri,MainModel.sellerBroadcast.broadcastID)
-            cManager.communication = {
-                    successCallback, failureCallback, arguments ->
-                MainModel.ttnUploadPhoto(successCallback, failureCallback, arguments as CommunicationManager.TtNUploadPhoto)
-            }
-            cManager.commit(currentActivity)
+
         }
     }
 }

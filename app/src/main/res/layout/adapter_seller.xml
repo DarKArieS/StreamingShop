@@ -54,7 +54,7 @@
             app:layout_constraintTop_toTopOf="@+id/showProductImage" android:layout_marginBottom="4dp"
             app:layout_constraintBottom_toTopOf="@+id/showTotalProductPrice"
             app:layout_constraintStart_toEndOf="@+id/showProductImage" android:layout_marginStart="12dp"
-            android:hint="請介紹要賣的物品" android:textAlignment="textStart"/>
+            android:hint="請介紹要賣的物品" android:textAlignment="textStart" android:inputType="textMultiLine"/>
     <Button
             android:text="修改"
             android:layout_width="60dp"

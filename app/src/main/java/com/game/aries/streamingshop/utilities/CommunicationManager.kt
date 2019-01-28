@@ -6,14 +6,13 @@ import android.widget.Toast
 import com.game.aries.streamingshop.MainActivity
 import com.game.aries.streamingshop.model.MainModel
 
-
 class CommunicationManager {
     var navigation: (() -> Unit)? = null
     var customCallback: (() -> Unit)? = null
-    var communication: ((successCallback: () -> Unit, failureCallback: () -> Unit, arguments: CommunicationArguments?)->Unit)? = null
-    var transitionMessage: String = "Loading"
 
-    var arguments : CommunicationArguments? = null
+    // this callback needs to run on other thread
+    var communication: ((successCallback: () -> Unit, failureCallback: () -> Unit)->Unit)? = null
+    var transitionMessage: String = "Loading"
 
     val handler = Handler()
 
@@ -30,7 +29,7 @@ class CommunicationManager {
             }
 
             handlerStatus = handler.post { if (navigation != null) navigation!!() }
-            Thread.sleep(500)
+            Thread.sleep(200)
 
             handlerStatus = handler.post { mainActivity.hideLoadingView() }
         }
@@ -43,13 +42,6 @@ class CommunicationManager {
 
         //mainActivity.runOnUiThread{mainActivity.showLoadingView()}
         mainActivity.showLoadingView(transitionMessage)
-        communication!!(fullCallBack, failureCallback, arguments)
+        communication!!(fullCallBack, failureCallback)
     }
-
-    // arguments data class
-    interface CommunicationArguments
-    data class TtNUploadPhoto(var uri: Uri?, var stream_id: String): CommunicationArguments
-
-
-
 }

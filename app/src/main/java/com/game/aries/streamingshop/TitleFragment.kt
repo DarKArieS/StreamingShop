@@ -67,6 +67,7 @@ class TitleFragment : Fragment() {
         LoginManager.getInstance().logOut()
         (activity as MainActivity).findNavController(R.id.navHost)
             .navigate(TitleFragmentDirections.actionTitleFragmentToLoginFragment())
+//            .navigate(TitleFragmentDirections.actionTitleFragmentToLoginFragmentNoAnim())
     }
 
 }

@@ -9,3 +9,5 @@ data class SellerItem(var name:String="", var price:Int=0, var description:Strin
 data class BuyerItem(var name:String, var price:Int, var description:String, var number: Int)
 
 data class Broadcast(var broadcastName:String, var broadcastID:String)
+
+data class UserInfo(var id: Int, var name:String, var phone:String, var address:String)
