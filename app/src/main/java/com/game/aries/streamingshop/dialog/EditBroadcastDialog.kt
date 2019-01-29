@@ -35,7 +35,13 @@ class EditBroadcastDialog : DialogFragment() {
     private fun clickEnter(){
         MainModel.sellerBroadcast.broadcastName = rootView.broadcastNameEditText.text.toString()
         MainModel.sellerBroadcast.broadcastID = rootView.broadcastIDEditText.text.toString()
-        // ToDo: Do parsing here
+        // ToDoDone: Do parsing here
+        if(MainModel.sellerBroadcast.broadcastID.contains("http")){
+            val splitStrings = MainModel.sellerBroadcast.broadcastID.split("/")
+            //println(splitStrings)
+            if(MainModel.sellerBroadcast.broadcastID.endsWith("/"))MainModel.sellerBroadcast.broadcastID = splitStrings[splitStrings.size-2]
+            else MainModel.sellerBroadcast.broadcastID = splitStrings[splitStrings.size-1]
+        }
         editBroadcast!!.editBroadcast()
         this.dismiss()
     }

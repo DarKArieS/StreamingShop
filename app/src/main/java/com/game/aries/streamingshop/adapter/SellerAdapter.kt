@@ -22,6 +22,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
 
     interface AdapterListener{
         fun adapterSetImage(viewHolder: SellerAdapter.ViewHolder)
+        fun adapterDeleteItem(viewHolder: SellerAdapter.ViewHolder)
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
@@ -43,55 +44,60 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         private val deleteButton = itemView.deleteButton
         private val sellerItemUploadButton = itemView.sellerItemUploadButton
         private val showProductImage = itemView.showProductImage
+        var updateFlag = false
 
         fun bind(sellerItem: SellerItem) {
+            updateFlag = true
             initEditText(sellerItem)
-            deleteButton.setOnClickListener{ clickDeleteItem(sellerItem) }
+            deleteButton.setOnClickListener{ clickDeleteItem() }
             sellerItemUploadButton.setOnClickListener{ clickSellerItemUploadButton(sellerItem) }
             showProductImage.setOnClickListener { listener.adapterSetImage(this)}
             sellerProductName.addTextChangedListener(object: TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
-                    sellerItem.name = sellerProductName.editableText.toString()
-                    modifyItemInfo(sellerItem)
+                    if(!updateFlag) {
+                        sellerItem.name = sellerProductName.editableText.toString()
+                        modifyItemInfo(sellerItem)
+                    }
                 }
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             })
             sellerProductPrice.addTextChangedListener(object: TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
-                    if(sellerProductPrice.editableText.toString()!="")
-                        sellerItem.price= sellerProductPrice.editableText.toString().toInt()
-                    else sellerItem.price = 0
-                    modifyItemInfo(sellerItem)
+                    if(!updateFlag) {
+                        if (sellerProductPrice.editableText.toString() != "")
+                            sellerItem.price = sellerProductPrice.editableText.toString().toInt()
+                        else sellerItem.price = 0
+                        modifyItemInfo(sellerItem)
+                    }
                 }
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             })
             sellerProductDescription.addTextChangedListener(object: TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
-                    sellerItem.description= sellerProductDescription.editableText.toString()
-                    modifyItemInfo(sellerItem)
+                    if(!updateFlag) {
+                        sellerItem.description = sellerProductDescription.editableText.toString()
+                        modifyItemInfo(sellerItem)
+                    }
                 }
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             })
+            updateFlag=false
         }
 
         private fun modifyItemInfo(sellerItem:SellerItem){
-            if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
-                sellerItem.uploadState = UploadState.UPLOAD_MODIFIED
-                sellerItemUploadButton.text = "修改"
-                sellerItemUploadButton.isClickable = true
-            }
+                if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
+                    sellerItem.uploadState = UploadState.UPLOAD_MODIFIED
+                    sellerItemUploadButton.text = "修改"
+                    sellerItemUploadButton.isClickable = true
+                }
         }
 
         private fun initEditText(sellerItem: SellerItem){
-            val price = when(sellerItem.price!=0){
-                 true->sellerItem.price.toString()
-                 false->""
-            }
             sellerProductName.setText(sellerItem.name)
-            sellerProductPrice.setText(price)
+            sellerProductPrice.setText(priceZeroProcessor(sellerItem))
             sellerProductDescription.setText(sellerItem.description)
 
             showProductImage.setImageResource(R.drawable.ic_add_a_photo_white_24dp)
@@ -100,8 +106,18 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             if(sellerItem.picture!="") updateImage(sellerItem)
             if(sellerItem.uploadState==UploadState.UPLOAD_MODIFIED) sellerItemUploadButton.text = "修改"
             if(sellerItem.uploadState==UploadState.UPLOAD_DONE) {
-                sellerItemUploadButton.text = "已上傳"
+                sellerItemUploadButton.text = "已儲存"
                 sellerItemUploadButton.isClickable = false
+            }
+        }
+
+        private fun priceZeroProcessor(sellerItem: SellerItem): String{
+            return when(sellerItem.price!=0){
+                true->sellerItem.price.toString()
+                false->{
+                    if (sellerItem.uploadState==UploadState.UPLOAD_DONE)  "0"
+                    else  ""
+                }
             }
         }
 
@@ -122,7 +138,11 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
         }
 
-        private fun clickDeleteItem(sellerItem: SellerItem){
+        private fun clickDeleteItem(){
+            listener.adapterDeleteItem(this)
+        }
+
+        fun deleteItem(sellerItem: SellerItem){
             if(sellerItem.uploadState==UploadState.UPLOAD_DONE ||
                 sellerItem.uploadState==UploadState.UPLOAD_MODIFIED){
                 val cManager = CommunicationManager()
@@ -150,7 +170,10 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
             cManager.customCallback = {
                 if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
-                    sellerItemUploadButton.text = "已上傳"
+                    sellerItemUploadButton.text = "已儲存"
+                    updateFlag = true
+                    sellerProductPrice.setText(priceZeroProcessor(sellerItem))
+                    updateFlag = false
                 }else{
                     Toast.makeText(currentActivity, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
                 }
@@ -167,7 +190,10 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
             cManager.customCallback = {
                 if(sellerItem.uploadState == UploadState.UPLOAD_DONE){
-                    sellerItemUploadButton.text = "已上傳"
+                    sellerItemUploadButton.text = "已儲存"
+                    updateFlag = true
+                    sellerProductPrice.setText(priceZeroProcessor(sellerItem))
+                    updateFlag = false
                 }else{
                     Toast.makeText(currentActivity, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
                 }

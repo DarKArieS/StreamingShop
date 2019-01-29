@@ -25,6 +25,8 @@ import android.os.Build
 import android.support.v4.content.FileProvider
 import android.support.v7.widget.RecyclerView
 import android.widget.Toast
+import androidx.navigation.findNavController
+import com.game.aries.streamingshop.dialog.AlarmDialog
 import com.game.aries.streamingshop.dialog.GetImageDialog
 import com.game.aries.streamingshop.utilities.CommunicationManager
 import com.game.aries.streamingshop.utilities.generateOrderId
@@ -36,7 +38,8 @@ private const val  ACT_INTENT_CORP_IMAGE = 102
 class SellerFragment : Fragment(), MenuInterface,
     EditBroadcastDialog.EditBroadcast,
     GetImageDialog.DialogListener,
-    SellerAdapter.AdapterListener {
+    SellerAdapter.AdapterListener,
+    MainActivity.BackPressedManager {
     lateinit var rootView : View
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -89,6 +92,20 @@ class SellerFragment : Fragment(), MenuInterface,
         MainModel.saveSellerInfo(activity as ContextWrapper)
     }
 
+    class BackPressAlarmDialog: AlarmDialog(){
+        override fun clickEnterButton() {
+            (activity as MainActivity).findNavController(R.id.navHost).navigateUp()
+        }
+    }
+
+    override fun onBackPressed(): Boolean {
+        //Todo block this when broadcasting
+        val alarmDialog = BackPressAlarmDialog()
+        alarmDialog.setAlarmMessage("將會遺失尚未儲存的資訊，確定嗎？")
+        alarmDialog.show(fragmentManager, "BackPressedAlarmDialog")
+        return true
+    }
+
     private fun setSellerFragmentActionBar(setTrue:Boolean){
         when(setTrue){
             true->{
@@ -96,16 +113,18 @@ class SellerFragment : Fragment(), MenuInterface,
                 (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
                 (activity as MainActivity).mSupportActionBar.title = MainModel.sellerBroadcast.broadcastName
                 (activity as MainActivity).menuInterface = this
+                (activity as MainActivity).isExistsNavigationDrawer(false)
             }
             false->{
                 (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = false
                 (activity as MainActivity).mSupportActionBar.title = getString(R.string.app_name)
                 (activity as MainActivity).menuInterface = null
+                (activity as MainActivity).isExistsNavigationDrawer(true)
             }
         }
     }
 
-    override fun actionEdit(){
+    override fun actionBarEdit(){
         val editNameDialog = EditBroadcastDialog.newInstance(this)
         editNameDialog.show(fragmentManager, "EditNameDialog")
     }
@@ -148,6 +167,21 @@ class SellerFragment : Fragment(), MenuInterface,
     override fun adapterSetImage(viewHolder: SellerAdapter.ViewHolder) {
         val getImageDialog = GetImageDialog.newInstance(this)
         getImageDialog.show(fragmentManager, "GetImageDialog")
+        currentViewHolder = viewHolder
+    }
+
+    class DeleteAlarmDialog: AlarmDialog(){
+        var currentViewHolder: SellerAdapter.ViewHolder? = null
+        override fun clickEnterButton() {
+            currentViewHolder!!.deleteItem(MainModel.sellerItemList[currentViewHolder!!.adapterPosition])
+        }
+    }
+
+    override fun adapterDeleteItem(viewHolder: SellerAdapter.ViewHolder) {
+        val alarmDialog = DeleteAlarmDialog()
+        alarmDialog.setAlarmMessage("確定要刪除商品嗎？")
+        alarmDialog.show(fragmentManager, "DeleteAlarmDialog")
+        alarmDialog.currentViewHolder = viewHolder
         currentViewHolder = viewHolder
     }
 

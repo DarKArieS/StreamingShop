@@ -62,6 +62,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun isExistsNavigationDrawer(isExists:Boolean){
+        if(isExists){
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED,navDrawer_left)
+            mSupportActionBar.setDisplayHomeAsUpEnabled(true)
+            mSupportActionBar.setHomeButtonEnabled(true)
+            drawerToggle.syncState()
+        }else{
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED,navDrawer_left)
+            mSupportActionBar.setDisplayHomeAsUpEnabled(false)
+            mSupportActionBar.setHomeButtonEnabled(false)
+            drawerToggle.syncState()
+        }
+    }
+
     private fun initAnimator(){
         loadingView = this.layoutInflater.inflate(R.layout.loading_layout, null)
         loadingView.setOnTouchListener { _,_ ->  true} // block touch event
@@ -154,7 +168,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when(item?.itemId){
             R.id.action_edit->{
-                menuInterface?.actionEdit()
+                menuInterface?.actionBarEdit()
             }
         }
         if (drawerToggle.onOptionsItemSelected(item)) {

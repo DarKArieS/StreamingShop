@@ -32,13 +32,12 @@
     <EditText
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="number"
             android:ems="10"
             android:id="@+id/broadcastIDEditText"
             app:layout_constraintStart_toEndOf="@+id/dialogIDTextView" android:layout_marginStart="8dp"
             app:layout_constraintTop_toTopOf="@+id/dialogIDTextView"
             app:layout_constraintBottom_toBottomOf="@+id/dialogIDTextView"
-            android:hint="Facebook 直播號碼"/>
+            android:hint="FB 直播號碼或網址" android:inputType="textUri"/>
     <Button
             android:text="確定"
             android:layout_width="wrap_content"
