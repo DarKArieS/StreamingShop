@@ -21,7 +21,7 @@
             android:textSize="24sp"
             app:layout_constraintEnd_toStartOf="@+id/showProductNTD"
             app:layout_constraintBottom_toBottomOf="@+id/showProductNTD" android:layout_marginEnd="4dp"
-            android:hint="輸入價格" android:inputType="number"/>
+            android:hint="輸入價格" android:inputType="number" android:textAlignment="textEnd"/>
     <TextView
             android:text="NTD"
             android:layout_width="wrap_content"
@@ -57,19 +57,19 @@
             android:hint="請介紹要賣的物品" android:textAlignment="textStart" android:inputType="textMultiLine"/>
     <Button
             android:text="新增"
-            android:layout_width="60dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:id="@+id/sellerItemUploadButton" android:layout_marginBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="24dp"/>
+            android:layout_marginStart="24dp" android:textSize="12sp"/>
     <Button
             android:text="開賣"
-            android:layout_width="60dp"
+            android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:id="@+id/sellerBroadcastItemButton"
             app:layout_constraintStart_toEndOf="@+id/sellerItemUploadButton"
             android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/sellerItemUploadButton"/>
+            app:layout_constraintBottom_toBottomOf="@+id/sellerItemUploadButton" android:textSize="12sp"/>
     <TextView
             android:text="賣出：？"
             android:layout_width="wrap_content"

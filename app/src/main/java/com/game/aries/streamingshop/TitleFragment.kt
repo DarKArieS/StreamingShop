@@ -63,7 +63,7 @@ class TitleFragment : Fragment() {
     private fun clickSellerButton(){
         val cManager = CommunicationManager()
         cManager.communication = { p0,p1->
-            MainModel.getSellerItemList(p0, p1)
+            MainModel.updateSellerItemList(p0, p1)
 //            Thread{p0.invoke()}.start()
         }
         cManager.navigation = {

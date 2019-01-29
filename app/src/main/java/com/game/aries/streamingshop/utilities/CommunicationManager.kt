@@ -12,7 +12,8 @@ class CommunicationManager {
 
     // this callback needs to run on other thread
     var communication: ((successCallback: () -> Unit, failureCallback: () -> Unit)->Unit)? = null
-    var showMessage: String = "Loading"
+    var loadingMessage: String = "Loading"
+    var failMessage = "Connecting failed!"
 
     val handler = Handler()
 
@@ -32,17 +33,18 @@ class CommunicationManager {
             Thread.sleep(200)
 
             handlerStatus = handler.post { mainActivity.hideLoadingView() }
+
         }
 
         val failureCallback = {
             var handlerStatus = handler.post{
-                Toast.makeText(mainActivity, "Connecting failed!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(mainActivity, failMessage, Toast.LENGTH_SHORT).show()
                 mainActivity.hideLoadingView()
             }
         }
 
         //mainActivity.runOnUiThread{mainActivity.showLoadingView()}
-        mainActivity.showLoadingView(showMessage)
+        mainActivity.showLoadingView(loadingMessage)
         communication!!(fullCallBack, failureCallback)
     }
 }

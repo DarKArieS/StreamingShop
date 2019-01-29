@@ -53,14 +53,20 @@ class SellerFragment : Fragment(), MenuInterface,
 
         // setup refresh
         rootView.swipeRefreshLayout.setOnRefreshListener{
+            val newSellerItemList = mutableListOf<SellerItem>()
             val cManager = CommunicationManager()
-            cManager.showMessage = "Updating"
+            cManager.loadingMessage = "Updating"
             cManager.communication = { p0,p1->
-                MainModel.updateSellerItemList(p0,p1)
+                MainModel.getSellerItemList(p0,p1,newSellerItemList)
             }
             cManager.customCallback = {
-                setupAdapter(MainModel.sellerItemList)
-                rootView.swipeRefreshLayout.isRefreshing=false
+                Thread{
+                    MainModel.updateOldSellerItemList(newSellerItemList,MainModel.sellerItemList)
+                    (activity as MainActivity).runOnUiThread {
+                        setupAdapter(MainModel.sellerItemList)
+                        rootView.swipeRefreshLayout.isRefreshing=false
+                    }
+                }.start()
             }
             cManager.commit(activity as MainActivity)
         }

@@ -147,49 +147,6 @@ object MainModel {
 
     lateinit var sellerItemList : MutableList<SellerItem>
 
-    fun getSellerItemList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
-        val myJSON = JSONObject()
-            .put("token", AccessToken.getCurrentAccessToken().token)
-            .toString()
-        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
-        val request =
-            Request.Builder().url(backendUrl + "api/product/preparelist")
-                .addHeader("Content-Type", "application/json")
-                .post(myJSONRequestBody)
-                .build()
-
-        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
-            override fun onFailure(call: Call?, e: IOException?) {
-                failureCallBack()
-            }
-
-            override fun onResponse(call: Call?, response: Response?) {
-                println("get seller item list")
-                //println(response!!.body()!!.string())
-                val readJSON = JSONObject(response!!.body()!!.string())
-                println(readJSON)
-                if(readJSON.getString("result")=="true"){
-                    sellerItemList = mutableListOf()
-                    val dataJsonArray = JSONArray(readJSON.getString("response"))
-                    for (i in 0 until dataJsonArray.length()-1 ){
-                        val dataJson = JSONObject(dataJsonArray[i].toString())
-                        sellerItemList.add(0,
-                            SellerItem(
-                                dataJson.getString("name"),
-                                dataJson.getInt("price"),
-                                dataJson.getString("description"),
-                                dataJson.getString("picture"),
-                                true,
-                                dataJson.getInt("id")
-                            )
-                        )
-                    }
-                }
-                successCallBack()
-            }
-        })
-    }
-
     fun updateSellerItemList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
         val myJSON = JSONObject()
             .put("token", AccessToken.getCurrentAccessToken().token)
@@ -207,49 +164,111 @@ object MainModel {
             }
 
             override fun onResponse(call: Call?, response: Response?) {
+                println("updateSellerItemList")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    sellerItemList = mutableListOf()
+                    val dataJsonArray = JSONArray(readJSON.getString("response"))
+                    for (i in 0 until dataJsonArray.length()){
+                        val dataJson = JSONObject(dataJsonArray[i].toString())
+                        sellerItemList.add(0,
+                            SellerItem(
+                                dataJson.getString("name"),
+                                dataJson.getInt("price"),
+                                dataJson.getString("description"),
+                                dataJson.getString("picture"),
+                                UploadState.UPLOAD_DONE,
+                                dataJson.getInt("id"),
+                                ""
+                            )
+                        )
+                    }
+                    println(sellerItemList)
+                }
+                successCallBack()
+            }
+        })
+    }
+
+    fun getSellerItemList(successCallBack: ()->Unit, failureCallBack: ()->Unit, newSellerItemList:MutableList<SellerItem>)
+    {
+        newSellerItemList.clear()
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .toString()
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/product/preparelist")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
                 println("get seller item list")
                 //println(response!!.body()!!.string())
                 val readJSON = JSONObject(response!!.body()!!.string())
                 println(readJSON)
                 if(readJSON.getString("result")=="true"){
-                    //ToDo OK http RunTime Error ="=
 //                    val newSellerItemList = mutableListOf<SellerItem>()
-//                    val dataJsonArray = JSONArray(readJSON.getString("response"))
-//                    for (i in 0 until dataJsonArray.length()-1 ){
-//                        val dataJson = JSONObject(dataJsonArray[i].toString())
-//                        newSellerItemList.add(0,
-//                            SellerItem(
-//                                dataJson.getString("name"),
-//                                dataJson.getInt("price"),
-//                                dataJson.getString("description"),
-//                                dataJson.getString("picture"),
-//                                true,
-//                                dataJson.getInt("id")
-//                            )
-//                        )
-//                    }
-//
-//                    for (old in sellerItemList){
-//                        if (old.isUploaded){
-//                            for ((index,new) in newSellerItemList.withIndex()){
-//                                if (old.uploadedID == new.uploadedID){
-//                                    old.name = new.name
-//                                    old.description = new.description
-//                                    old.picture = new.picture
-//                                    old.price = new.price
-//                                    newSellerItemList.removeAt(index)
-//                                }
-//                            }
-//                        }
-//                    }
-//                    if(newSellerItemList.size>0){
-//                        println("update seller list: add some seller items back from server ...")
-//                        for(new in newSellerItemList) sellerItemList.add(new)
-//                    }
+                    val dataJsonArray = JSONArray(readJSON.getString("response"))
+                    for (i in 0 until dataJsonArray.length()){
+                        val dataJson = JSONObject(dataJsonArray[i].toString())
+                        newSellerItemList.add(0,
+                            SellerItem(
+                                dataJson.getString("name"),
+                                dataJson.getInt("price"),
+                                dataJson.getString("description"),
+                                dataJson.getString("picture"),
+                                UploadState.UPLOAD_DONE,
+                                dataJson.getInt("id"),
+                                ""
+                            )
+                        )
+                    }
                 }
                 successCallBack()
             }
         })
+    }
+
+    fun updateOldSellerItemList(newList: MutableList<SellerItem>, oldList: MutableList<SellerItem>){
+        var oldIndex = 0
+        while(true){
+            if (oldList[oldIndex].uploadState != UploadState.UPLOAD_NOT_YET){
+                var updatedFlag = false
+                for ((newIndex,new) in newList.withIndex()){
+                    if (oldList[oldIndex].uploadedID == new.uploadedID){
+                        if(oldList[oldIndex].uploadState==UploadState.UPLOAD_DONE){
+                            oldList[oldIndex].name = new.name
+                            oldList[oldIndex].description = new.description
+                            oldList[oldIndex].picture = new.picture
+                            oldList[oldIndex].price = new.price
+                        }
+                        newList.removeAt(newIndex)
+                        updatedFlag = true
+                        break
+                    }
+                }
+                if (!updatedFlag){
+                    oldList.removeAt(oldIndex)
+                    oldIndex--
+                }
+            }
+            oldIndex++
+            if(oldIndex>=oldList.size) break
+        }
+
+        if(newList.size>0){
+            println("update seller list: add some seller items back from server ...")
+            for(new in newList) oldList.add(new)
+        }
     }
 
     fun addSellerItem(successCallBack: ()->Unit, failureCallBack: ()->Unit, sellerItem:SellerItem){
@@ -282,8 +301,12 @@ object MainModel {
                 println(readJSON)
                 if(readJSON.getString("result")=="true"){
                     val responseJSON = JSONObject(readJSON.getString("response"))
-                    sellerItem.isUploaded = true
+                    sellerItem.uploadState = UploadState.UPLOAD_DONE
                     sellerItem.uploadedID = responseJSON.getInt("id")
+                    sellerItem.uploadMessage = ""
+                }else{
+                    sellerItem.uploadState = UploadState.UPLOAD_NOT_YET
+                    sellerItem.uploadMessage = readJSON.getString("response")
                 }
                 successCallBack()
             }
@@ -319,6 +342,13 @@ object MainModel {
                 //println(response!!.body()!!.string())
                 val readJSON = JSONObject(response!!.body()!!.string())
                 println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    sellerItem.uploadState = UploadState.UPLOAD_DONE
+                    sellerItem.uploadMessage = ""
+                }else{
+                    sellerItem.uploadState = UploadState.UPLOAD_MODIFIED
+                    sellerItem.uploadMessage = readJSON.getString("response")
+                }
                 successCallBack()
             }
         })
@@ -334,7 +364,7 @@ object MainModel {
         println(myJSON)
         val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
         val request =
-            Request.Builder().url(backendUrl + "api/product/set")
+            Request.Builder().url(backendUrl + "api/product/delete")
                 .addHeader("Content-Type", "application/json")
                 .delete(myJSONRequestBody)
                 .build()
@@ -346,11 +376,14 @@ object MainModel {
 
             override fun onResponse(call: Call?, response: Response?) {
                 println("delete seller item")
-                println(response!!.body()!!.string())
-//                val readJSON = JSONObject(response!!.body()!!.string())
-//                println(readJSON)
-                // ToDo Boom！
-                successCallBack()
+//                println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    successCallBack()
+                }else{
+                    failureCallBack()
+                }
             }
         })
     }
