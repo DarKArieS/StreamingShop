@@ -28,6 +28,7 @@ import android.widget.Toast
 import androidx.navigation.findNavController
 import com.game.aries.streamingshop.dialog.AlarmDialog
 import com.game.aries.streamingshop.dialog.GetImageDialog
+import com.game.aries.streamingshop.model.UploadState
 import com.game.aries.streamingshop.utilities.CommunicationManager
 import com.game.aries.streamingshop.utilities.generateOrderId
 
@@ -50,6 +51,7 @@ class SellerFragment : Fragment(), MenuInterface,
 
         //read stored information
         MainModel.loadSellerInfo(activity as ContextWrapper)
+        checkBroadcastID()
 
         // setup adapter
         setupAdapter(MainModel.sellerItemList)
@@ -78,6 +80,22 @@ class SellerFragment : Fragment(), MenuInterface,
         rootView.addItemFloatingActionButton.setOnClickListener { clickAddItemFloatingActionButton() }
         rootView.startStreamFloatingActionButton.setOnClickListener{ clickStartStreamFloatingActionButton() }
 
+        // debug
+/*
+        rootView.debugFloatingActionButton.setOnClickListener {
+//            println("========================================================")
+//            for ( (i,a) in MainModel.sellerItemList.withIndex())
+//                println( i.toString() +": " + a.toString())
+
+            for ( (i,a) in viewHolderSubscribers.withIndex())
+                println( i.toString() +": " + a.hashCode())
+
+            for (subscriber in viewHolderSubscribers)
+            {
+                subscriber.subscriberTest()
+            }
+        }
+*/
         return rootView
     }
 
@@ -99,21 +117,31 @@ class SellerFragment : Fragment(), MenuInterface,
     }
 
     override fun onBackPressed(): Boolean {
-        //Todo block this when broadcasting
-        val alarmDialog = BackPressAlarmDialog()
-        alarmDialog.setAlarmMessage("將會遺失尚未儲存的資訊，確定嗎？")
-        alarmDialog.show(fragmentManager, "BackPressedAlarmDialog")
+        if(!MainModel.isBroadcasting){
+            var isChanged = false
+            for (a in MainModel.sellerItemList)
+                if (a.uploadState != UploadState.UPLOAD_DONE) isChanged = true
+            if(isChanged){
+                val alarmDialog = BackPressAlarmDialog()
+                alarmDialog.setAlarmMessage("將會遺失尚未儲存的資訊，確定嗎？")
+                alarmDialog.show(fragmentManager, "BackPressedAlarmDialog")
+            }else return false
+        }
         return true
     }
 
     private fun setSellerFragmentActionBar(setTrue:Boolean){
         when(setTrue){
             true->{
-                checkBroadcastID()
-                (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
                 (activity as MainActivity).mSupportActionBar.title = MainModel.sellerBroadcast.broadcastName
-                (activity as MainActivity).menuInterface = this
                 (activity as MainActivity).isExistsNavigationDrawer(false)
+                if(MainModel.isBroadcasting){
+                    (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = false
+                    (activity as MainActivity).menuInterface = null
+                }else{
+                    (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
+                    (activity as MainActivity).menuInterface = this
+                }
             }
             false->{
                 (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = false
@@ -145,16 +173,51 @@ class SellerFragment : Fragment(), MenuInterface,
     }
 
     private fun setupAdapter(itemList:MutableList<SellerItem>) {
+        viewHolderSubscribers = mutableListOf()
         rootView.sellerRecyclerView.adapter = SellerAdapter(this.context!!, itemList, this, activity as MainActivity)
         rootView.sellerRecyclerView.layoutManager = LinearLayoutManager(this.context!!)
     }
 
-    private fun clickStartStreamFloatingActionButton(){
-        if (MainModel.sellerBroadcast.broadcastID.length>=15){
-            val cManager = CommunicationManager()
+    private var viewHolderSubscribers = mutableListOf<SellerAdapter.ViewHolder>()
 
+    override fun adapterSubscribeViewHolder(viewHolder: SellerAdapter.ViewHolder) {
+        viewHolderSubscribers.add(viewHolder)
+    }
+
+    private fun clickStartStreamFloatingActionButton(){
+        if(MainModel.isBroadcasting){
+            val cManager = CommunicationManager()
+            cManager.loadingMessage = "Stopping"
+            cManager.communication = { p0,p1->
+                MainModel.endSellerStream(p0,p1)
+            }
+            cManager.customCallback = {
+                rootView.startStreamFloatingActionButton.setImageResource(R.drawable.ic_streaming_start_vector)
+                MainModel.isBroadcasting=false
+                setSellerFragmentActionBar(true)
+                for (subscriber in viewHolderSubscribers)
+                    if(subscriber.adapterPosition>=0)
+                        subscriber.buttonStateUpdate(MainModel.sellerItemList[subscriber.adapterPosition])
+            }
+            cManager.commit(activity as MainActivity)
+        }
+        else if (MainModel.sellerBroadcast.broadcastID.length>=15){
+            val cManager = CommunicationManager()
+            cManager.loadingMessage = "Starting"
+            cManager.communication = { p0,p1->
+                MainModel.startSellerStream(p0,p1)
+            }
+            cManager.customCallback = {
+                MainModel.isBroadcasting=true
+                setSellerFragmentActionBar(true)
+                rootView.startStreamFloatingActionButton.setImageResource(R.drawable.ic_streaming_vector)
+                for (subscriber in viewHolderSubscribers)
+                    if(subscriber.adapterPosition>=0)
+                        subscriber.buttonStateUpdate(MainModel.sellerItemList[subscriber.adapterPosition])
+            }
+            cManager.commit(activity as MainActivity)
         }else{
-            Toast.makeText(activity as MainActivity, "請輸入Facebook 直播ID", Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity as MainActivity, "請輸入有效的Facebook 直播ID", Toast.LENGTH_SHORT).show()
         }
     }
 

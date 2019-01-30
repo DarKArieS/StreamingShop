@@ -179,6 +179,7 @@ object MainModel {
                                 dataJson.getInt("price"),
                                 dataJson.getString("description"),
                                 dataJson.getString("picture"),
+                                dataJson.getInt("life_time"),
                                 UploadState.UPLOAD_DONE,
                                 dataJson.getInt("id"),
                                 ""
@@ -226,6 +227,7 @@ object MainModel {
                                 dataJson.getInt("price"),
                                 dataJson.getString("description"),
                                 dataJson.getString("picture"),
+                                dataJson.getInt("life_time"),
                                 UploadState.UPLOAD_DONE,
                                 dataJson.getInt("id"),
                                 ""
@@ -239,9 +241,10 @@ object MainModel {
     }
 
     fun updateOldSellerItemList(newList: MutableList<SellerItem>, oldList: MutableList<SellerItem>){
+        if(newList.size==0) return
         var oldIndex = 0
         while(true){
-            if (oldList[oldIndex].uploadState != UploadState.UPLOAD_NOT_YET){
+            if (oldList.size != 0 && oldList[oldIndex].uploadState != UploadState.UPLOAD_NOT_YET){
                 var updatedFlag = false
                 for ((newIndex,new) in newList.withIndex()){
                     if (oldList[oldIndex].uploadedID == new.uploadedID){
@@ -250,6 +253,7 @@ object MainModel {
                             oldList[oldIndex].description = new.description
                             oldList[oldIndex].picture = new.picture
                             oldList[oldIndex].price = new.price
+                            oldList[oldIndex].life_time = new.life_time
                         }
                         newList.removeAt(newIndex)
                         updatedFlag = true
@@ -277,6 +281,7 @@ object MainModel {
             .put("description",sellerItem.description)
             .put("price",sellerItem.price.toString())
             .put("picture","123.png")
+            .put("life_time",sellerItem.life_time)
         val myJSON = JSONObject()
             .put("token", AccessToken.getCurrentAccessToken().token)
             .put("product",productJSON)
@@ -320,6 +325,7 @@ object MainModel {
             .put("description",sellerItem.description)
             .put("price",sellerItem.price.toString())
             .put("picture","123.png")
+            .put("life_time",sellerItem.life_time)
         val myJSON = JSONObject()
             .put("token", AccessToken.getCurrentAccessToken().token)
             .put("product",productJSON)
@@ -388,6 +394,70 @@ object MainModel {
         })
     }
 
+    fun startSellerStream(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("live_video_id", sellerBroadcast.broadcastID)
+            .put("title", sellerBroadcast.broadcastName)
+            .toString()
+        println(myJSON)
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/live_video/start")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("start stream")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    successCallBack()
+                }else{
+                    failureCallBack()
+                }
+            }
+        })
+    }
+
+    fun endSellerStream(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("live_video_id", sellerBroadcast.broadcastID)
+            .toString()
+        println(myJSON)
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/live_video/stop")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("stop stream")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    successCallBack()
+                }else{
+                    failureCallBack()
+                }
+            }
+        })
+    }
 
     var isBroadcasting = false
 

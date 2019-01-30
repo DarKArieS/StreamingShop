@@ -3,7 +3,7 @@
                                              xmlns:app="http://schemas.android.com/apk/res-auto"
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="match_parent"
-                                             android:layout_height="300dp"
+                                             android:layout_height="250dp"
                                              android:background="@drawable/adapter_background">
 
     <EditText
@@ -11,7 +11,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/showProductName" android:layout_marginTop="16dp"
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="24dp" android:textSize="24sp" android:hint="物品名稱"
+            android:layout_marginStart="24dp" android:textSize="18sp" android:hint="物品名稱"
             android:layout_marginEnd="24dp" app:layout_constraintEnd_toStartOf="@+id/deleteButton"
             android:inputType="text"/>
     <EditText
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/showRemainingTime"
-            android:textSize="24sp"
+            android:textSize="18sp"
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toTopOf="@+id/showProductNTD" android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"/>
@@ -57,14 +57,14 @@
             app:layout_constraintTop_toBottomOf="@+id/showProductName"/>
     <EditText
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="75dp"
             android:id="@+id/sellerProductDescription" app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="12dp"
             android:textSize="14sp"
             app:layout_constraintTop_toTopOf="@+id/showProductImage"
             app:layout_constraintStart_toEndOf="@+id/showProductImage" android:layout_marginStart="12dp"
             android:hint="介紹要賣的物品" android:textAlignment="textStart" android:inputType="textMultiLine"
-            app:layout_constraintBottom_toBottomOf="@+id/showProductImage"/>
+    />
     <Button
             android:text="新增"
             android:layout_width="70dp"
@@ -79,7 +79,8 @@
             android:id="@+id/sellerBroadcastItemButton"
             app:layout_constraintStart_toEndOf="@+id/sellerItemUploadButton"
             android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/sellerItemUploadButton" android:textSize="12sp"/>
+            app:layout_constraintBottom_toBottomOf="@+id/sellerItemUploadButton" android:textSize="12sp"
+            android:visibility="invisible"/>
     <TextView
             android:text="賣出：？"
             android:layout_width="wrap_content"
@@ -89,13 +90,13 @@
             android:layout_marginBottom="16dp" app:layout_constraintBottom_toBottomOf="parent"
             android:visibility="gone"/>
     <EditText
-            android:layout_width="150dp"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:id="@+id/timeEditText"
+            android:id="@+id/sellerLifeTimeEditText"
             android:hint="販售持續時間"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="4dp"
             app:layout_constraintEnd_toStartOf="@+id/showRemainingTime" android:textAlignment="center"
-            android:inputType="number" android:textSize="24sp"
+            android:inputType="number" android:textSize="18sp"
             app:layout_constraintBaseline_toBaselineOf="@+id/showRemainingTime"/>
 </android.support.constraint.ConstraintLayout>

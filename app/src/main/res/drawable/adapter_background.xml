@@ -12,7 +12,7 @@
 
             <solid android:color="#ffffff"/>
             <stroke
-                    android:width= "5dp"
+                    android:width= "3dp"
                     android:color= "#000000"
                     android:dashGap= "10dp"
                     android:dashWidth= "20dp"
