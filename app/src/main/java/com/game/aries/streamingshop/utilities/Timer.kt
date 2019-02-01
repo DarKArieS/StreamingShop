@@ -2,20 +2,43 @@ package com.game.aries.streamingshop.utilities
 
 
 import android.os.Handler
+import com.game.aries.streamingshop.model.SellerItem
+import com.game.aries.streamingshop.model.UploadState
 
-class ItemTimer(private var timerController: ItemTimer.TimerController){
-    interface TimerController{
-        fun timerOnUpdate()
-        fun timesUp()
+class ItemTimer{
+//    enum class State{NEW, STARTED, DONE}
+
+//    var state = ItemTimer.State.NEW
+
+    interface TimerListener{
+        fun timerOnUpdate(time:Int)
+        fun timesUp(sellerItem:SellerItem)
     }
 
-    private var secondsCount = 60
+    private var timerListener: ItemTimer.TimerListener? = null
+    private var itemListener: SellerItem? = null
+
+    var secondsCount = 60
     private var isStarted = false
     private var isStopCalled = false
 
     private lateinit var timerThread: Thread
     private var uiHandler = Handler()
     private lateinit var uiRunnable: Runnable
+
+    fun setListener(l:ItemTimer.TimerListener): ItemTimer{
+        timerListener = l
+        return this
+    }
+
+    fun setItemListener(l:SellerItem): ItemTimer{
+        itemListener = l
+        return this
+    }
+
+    fun removeListener(){
+        timerListener = null
+    }
 
     fun setTime(seconds: Int): ItemTimer{
         secondsCount = seconds
@@ -24,6 +47,7 @@ class ItemTimer(private var timerController: ItemTimer.TimerController){
 
     fun start():ItemTimer {
         if(!isStarted){
+//            state = ItemTimer.State.STARTED
             isStarted = true
 
             timerThread = Thread{
@@ -34,14 +58,13 @@ class ItemTimer(private var timerController: ItemTimer.TimerController){
                 if(!isStopCalled){
                     // time's up
                     uiHandler.post{
-                        timerController.timesUp()
                         stop()
                     }
                 }
             }
 
             uiRunnable = Runnable {
-                timerController.timerOnUpdate()
+                timerListener?.timerOnUpdate(secondsCount)
                 uiHandler.postDelayed(uiRunnable, 1000)
             }
 
@@ -56,6 +79,9 @@ class ItemTimer(private var timerController: ItemTimer.TimerController){
         isStopCalled = true
         isStarted = false
         uiHandler.removeCallbacks(uiRunnable)
+//        state = ItemTimer.State.DONE
+        itemListener?.uploadState = UploadState.ITEM_SELLING_END
+        timerListener?.timesUp(itemListener!!)
         return this
     }
 }

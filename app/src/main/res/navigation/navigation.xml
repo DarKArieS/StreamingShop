@@ -53,4 +53,6 @@
                 app:enterAnim="@anim/slide_in_right"
                 app:exitAnim="@anim/slide_out_left" app:popUpTo="@+id/navigation" app:popUpToInclusive="true"/>
     </fragment>
+    <fragment android:id="@+id/settingFragment" android:name="com.game.aries.streamingshop.SettingFragment"
+              android:label="fragment_setting" tools:layout="@layout/fragment_setting"/>
 </navigation>

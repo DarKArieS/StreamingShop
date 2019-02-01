@@ -1,6 +1,7 @@
 package com.game.aries.streamingshop.adapter
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
@@ -16,6 +17,7 @@ import com.game.aries.streamingshop.R
 import com.game.aries.streamingshop.model.MainModel
 import com.game.aries.streamingshop.model.UploadState
 import com.game.aries.streamingshop.utilities.CommunicationManager
+import com.game.aries.streamingshop.utilities.ItemTimer
 
 class SellerAdapter (val context: Context, var sellerItemList: MutableList<SellerItem>, val listener: AdapterListener, var currentActivity: MainActivity):
     RecyclerView.Adapter<SellerAdapter.ViewHolder>() {
@@ -37,7 +39,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         p0.bind(sellerItemList[p1])
     }
 
-    inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView)
+    inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView), ItemTimer.TimerListener
     {
         private val sellerProductName = itemView.showProductName
         private val sellerProductPrice = itemView.showTotalProductPrice
@@ -47,17 +49,46 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         private val sellerItemUploadButton = itemView.sellerItemUploadButton
         private val sellerBroadcastItemButton = itemView.sellerBroadcastItemButton
         private val showProductImage = itemView.showProductImage
-        var updateViewFlag = false
-        var isInitialized = false
+        private val showRemainingTime = itemView.showRemainingTime
+
+        private var nameEditableBackgroundDrawable : Drawable? = null
+        private var priceEditableBackgroundDrawable : Drawable? = null
+        private var descriptionEditableBackgroundDrawable : Drawable? = null
+        private var lifetimeEditableBackgroundDrawable : Drawable? = null
+
+        private var updateViewFlag = false
+        private var isInitialized = false
+        private var timerHolder : ItemTimer? = null
 
         fun bind(sellerItem: SellerItem) {
-            initView(sellerItem)
+            // ToDo: need to refactor itemTimer :(
+            if(timerHolder!= null){
+                timerHolder?.removeListener()
+                println("timer: remove listener")
+            }
+
+            timerHolder = sellerItem.itemTimer
+            initViewHolder()
+            refreshView(sellerItem)
             deleteButton.setOnClickListener{ clickDeleteItem() }
             sellerItemUploadButton.setOnClickListener{ clickSellerItemUploadButton(sellerItem) }
             sellerBroadcastItemButton.setOnClickListener { clickBroadcastItem(sellerItem)}
             showProductImage.setOnClickListener { listener.adapterSetImage(this)}
-            // only add listener one time
+        }
+
+        private fun modifyItemInfo(sellerItem:SellerItem){
+            if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
+                sellerItem.uploadState = UploadState.UPLOAD_MODIFIED
+                buttonStateUpdate(sellerItem)
+            }
+        }
+
+        private fun initViewHolder(){
             if (!isInitialized){
+                nameEditableBackgroundDrawable = sellerProductName.background
+                priceEditableBackgroundDrawable = sellerProductPrice.background
+                descriptionEditableBackgroundDrawable = sellerProductDescription.background
+                lifetimeEditableBackgroundDrawable = sellerLifeTimeEditText.background
                 // println("add one viewHolder: " + this.hashCode())
                 sellerProductName.addTextChangedListener(object: TextWatcher {
                     override fun afterTextChanged(s: Editable?) {
@@ -109,14 +140,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
         }
 
-        private fun modifyItemInfo(sellerItem:SellerItem){
-            if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
-                sellerItem.uploadState = UploadState.UPLOAD_MODIFIED
-                buttonStateUpdate(sellerItem)
-            }
-        }
-
-        private fun initView(sellerItem: SellerItem){
+        private fun refreshView(sellerItem: SellerItem){
             updateViewFlag = true
             sellerProductName.setText(sellerItem.name)
             sellerProductPrice.setText(priceProcessor(sellerItem))
@@ -127,14 +151,99 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         }
 
         fun buttonStateUpdate(sellerItem: SellerItem){
+            lockEditableText(false)
             showProductImage.setImageResource(R.drawable.ic_add_a_photo_white_24dp)
             sellerItemUploadButton.text = "新增"
+            sellerBroadcastItemButton.text = "開賣"
+
             sellerBroadcastItemButton.visibility = View.INVISIBLE
+            deleteButton.visibility = View.VISIBLE
+            sellerItemUploadButton.visibility = View.VISIBLE
             if(sellerItem.picture!="") updateImage(sellerItem)
-            if(sellerItem.uploadState==UploadState.UPLOAD_MODIFIED) sellerItemUploadButton.text = "修改"
-            if(sellerItem.uploadState==UploadState.UPLOAD_DONE) {
-                sellerItemUploadButton.text = "已儲存"
-                if(MainModel.isBroadcasting) sellerBroadcastItemButton.visibility = View.VISIBLE
+            if(sellerItem.uploadState != UploadState.ITEM_SELLING_START){
+                showRemainingTime.text = "分鐘"
+                sellerLifeTimeEditText.visibility = View.VISIBLE
+            }
+
+            when(sellerItem.uploadState){
+                UploadState.UPLOAD_MODIFIED->sellerItemUploadButton.text = "修改"
+                UploadState.UPLOAD_DONE->{
+                    sellerItemUploadButton.text = "已儲存"
+                    if(MainModel.isBroadcasting) sellerBroadcastItemButton.visibility = View.VISIBLE
+                }
+                UploadState.ITEM_SELLING_START->{
+                    lockEditableText(true)
+                    deleteButton.visibility = View.INVISIBLE
+                    sellerItemUploadButton.visibility = View.INVISIBLE
+                    sellerBroadcastItemButton.visibility = View.VISIBLE
+                    sellerBroadcastItemButton.text = "停賣"
+
+                    sellerLifeTimeEditText.visibility = View.INVISIBLE
+
+                    if(sellerItem.itemTimer!=null){
+                        showItemTime(sellerItem.itemTimer!!.secondsCount)
+                        sellerItem.itemTimer!!.setListener(this)
+                        timerHolder = sellerItem.itemTimer
+                        println("timer: set listener")
+                    }else{
+                        showRemainingTime.text = "∞"
+                    }
+                }
+                UploadState.ITEM_SELLING_END->{
+                    lockEditableText(true)
+                    deleteButton.visibility = View.INVISIBLE
+                    sellerItemUploadButton.visibility = View.INVISIBLE
+                    sellerBroadcastItemButton.visibility = View.INVISIBLE
+                    sellerLifeTimeEditText.visibility = View.INVISIBLE
+                    showRemainingTime.text = "已到期"
+                    sellerItem.itemTimer?.removeListener()
+                    sellerItem.itemTimer = null
+                }
+            }
+        }
+
+        private fun showItemTime(time:Int){
+            if(time<60){
+                showRemainingTime.text = time.toString() + "秒"
+            }else{
+                showRemainingTime.text = (time/60).toString() + "分" + (time%60).toString() + "秒"
+            }
+        }
+
+        private fun lockEditableText(isLocked:Boolean){
+            if(isLocked){
+                sellerProductName.setOnTouchListener { _,_ ->  true}
+                sellerProductPrice.setOnTouchListener { _,_ ->  true}
+                sellerProductDescription.setOnTouchListener { _,_ ->  true}
+                sellerLifeTimeEditText.setOnTouchListener { _,_ ->  true}
+                sellerProductName.background = null
+                sellerProductPrice.background = null
+                sellerProductDescription.background = null
+                sellerLifeTimeEditText.background = null
+
+                sellerProductName.isFocusable = false
+                sellerProductPrice.isFocusable = false
+                sellerProductDescription.isFocusable = false
+                sellerLifeTimeEditText.isFocusable = false
+
+                sellerProductName.clearFocus()
+                sellerProductPrice.clearFocus()
+                sellerProductDescription.clearFocus()
+                sellerLifeTimeEditText.clearFocus()
+            }
+            else{
+                sellerProductName.setOnTouchListener { _,_ ->  false}
+                sellerProductPrice.setOnTouchListener { _,_ ->  false}
+                sellerProductDescription.setOnTouchListener { _,_ ->  false}
+                sellerLifeTimeEditText.setOnTouchListener { _,_ ->  false}
+                sellerProductName.background = nameEditableBackgroundDrawable
+                sellerProductPrice.background = priceEditableBackgroundDrawable
+                sellerProductDescription.background = descriptionEditableBackgroundDrawable
+                sellerLifeTimeEditText.background = lifetimeEditableBackgroundDrawable
+                sellerProductName.isFocusable = true
+                sellerProductPrice.isFocusable = true
+                sellerProductDescription.isFocusable = true
+                sellerLifeTimeEditText.isFocusable = true
             }
         }
 
@@ -207,7 +316,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
             cManager.customCallback = {
                 if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
-                    initView(sellerItem)
+                    refreshView(sellerItem)
                 }else{
                     Toast.makeText(currentActivity, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
                 }
@@ -224,7 +333,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
             cManager.customCallback = {
                 if(sellerItem.uploadState == UploadState.UPLOAD_DONE){
-                    initView(sellerItem)
+                    refreshView(sellerItem)
                 }else{
                     Toast.makeText(currentActivity, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
                 }
@@ -232,10 +341,63 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             cManager.commit(currentActivity)
         }
 
-        fun clickBroadcastItem(sellerItem: SellerItem){
+        private fun clickBroadcastItem(sellerItem: SellerItem){
             if(!MainModel.isBroadcasting) return
+            when(sellerItem.uploadState){
+                UploadState.UPLOAD_DONE->startBroadcastItem(sellerItem)
+                UploadState.ITEM_SELLING_START->stopBroadcastItem(sellerItem)
+                else->return
+            }
+        }
 
+        fun startBroadcastItem(sellerItem: SellerItem){
+            val cManager = CommunicationManager()
+            cManager.loadingMessage = "Uploading"
+            cManager.communication = { p0,p1->
+                MainModel.startSellingSellerItem(p0,p1,sellerItem)
+            }
+            cManager.customCallback = {
+                if(sellerItem.uploadState == UploadState.ITEM_SELLING_START){
+                    if(sellerItem.life_time>0){
+                        sellerItem.itemTimer = ItemTimer()
+                        sellerItem.itemTimer!!.setTime(sellerItem.life_time)
+                            .setListener(this)
+                            .setItemListener(sellerItem)
+                            .start()
+                    }
+                    refreshView(sellerItem)
+                }else{
+                    Toast.makeText(currentActivity, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
+            cManager.commit(currentActivity)
+        }
 
+        override fun timerOnUpdate(time: Int) {
+            showItemTime(time)
+        }
+
+        override fun timesUp(sellerItem:SellerItem) {
+            refreshView(sellerItem)
+        }
+
+        fun stopBroadcastItem(sellerItem: SellerItem){
+            val cManager = CommunicationManager()
+            cManager.loadingMessage = "Uploading"
+            cManager.communication = { p0,p1->
+                MainModel.stopSellingSellerItem(p0,p1,sellerItem)
+            }
+            cManager.customCallback = {
+                if(sellerItem.uploadState == UploadState.ITEM_SELLING_END){
+                    if(sellerItem.itemTimer!=null){
+                        sellerItem.itemTimer?.stop()
+                    }
+                    refreshView(sellerItem)
+                }else{
+                    Toast.makeText(currentActivity, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
+            cManager.commit(currentActivity)
         }
 
         fun subscriberTest(){

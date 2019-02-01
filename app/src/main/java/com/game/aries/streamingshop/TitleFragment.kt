@@ -24,6 +24,7 @@ class TitleFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_title, container, false)
+        (activity as MainActivity).isExistsNavigationDrawer(true)
 
         rootView.buyerButton.setOnClickListener {clickBuyerButton()}
         rootView.logoutButton.setOnClickListener { clickLogoutButton() }

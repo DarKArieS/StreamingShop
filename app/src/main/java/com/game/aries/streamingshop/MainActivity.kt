@@ -16,7 +16,10 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import androidx.navigation.NavDirections
+import androidx.navigation.createGraph
 import androidx.navigation.findNavController
+import androidx.navigation.ui.NavigationUI
 import com.game.aries.streamingshop.utilities.MenuInterface
 import com.game.aries.streamingshop.model.MainModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -38,7 +41,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val navController = this.findNavController(R.id.navHost)
+//        val navController = this.findNavController(R.id.navHost)
+//        NavigationUI.setupActionBarWithNavController(this, navController, drawerLayout)
+//        NavigationUI.setupWithNavController(navDrawer_left, navController)
 
         initAnimator()
         initNavigationDrawer()
@@ -56,7 +61,24 @@ class MainActivity : AppCompatActivity() {
             drawerLayout.closeDrawers()
 
             when(menuItem.itemId){
-                R.id.drawer_setting->{println("click drawer setting")}
+                R.id.drawer_setting->{
+                    println("click drawer setting")
+                    val transaction =
+                        navHost.childFragmentManager!!.beginTransaction()
+                    val frag = SettingFragment()
+
+                    transaction.setCustomAnimations(
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left,
+                        R.anim.slide_in_left,
+                        R.anim.slide_out_right
+                    )
+                    transaction.hide(navHost.childFragmentManager.fragments[0])
+                    transaction.add(R.id.navHost, frag)
+                    transaction.addToBackStack(null)
+                    transaction.commit()
+//                    println(navHost.childFragmentManager.fragments)
+                }
             }
             true
         }
@@ -147,9 +169,7 @@ class MainActivity : AppCompatActivity() {
             this, drawerLayout, R.string.app_name, R.string.app_name)
 
         drawerLayout.addDrawerListener(drawerToggle)
-        mSupportActionBar.setDisplayHomeAsUpEnabled(true)
-        mSupportActionBar.setHomeButtonEnabled(true)
-        drawerToggle.syncState()
+        isExistsNavigationDrawer(false)
 
         println("MainActivity onPrepareOptionsMenu")
         return super.onPrepareOptionsMenu(menu)

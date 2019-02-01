@@ -134,13 +134,14 @@ class SellerFragment : Fragment(), MenuInterface,
         when(setTrue){
             true->{
                 (activity as MainActivity).mSupportActionBar.title = MainModel.sellerBroadcast.broadcastName
-                (activity as MainActivity).isExistsNavigationDrawer(false)
                 if(MainModel.isBroadcasting){
                     (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = false
                     (activity as MainActivity).menuInterface = null
+                    (activity as MainActivity).isExistsNavigationDrawer(false)
                 }else{
                     (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
                     (activity as MainActivity).menuInterface = this
+                    (activity as MainActivity).isExistsNavigationDrawer(true)
                 }
             }
             false->{

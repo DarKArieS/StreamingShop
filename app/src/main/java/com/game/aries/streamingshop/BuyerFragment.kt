@@ -16,10 +16,12 @@ private const val ARG_FRAG_BUYER_PAY = "ARG_FRAG_BUYER_PAY"
 
 class BuyerFragment : Fragment(),
     BuyerItemChildFragment.OnFragmentInteractionListener,
-    BuyerPayChildFragment.OnFragmentInteractionListener
+    BuyerPayChildFragment.OnFragmentInteractionListener,
+        MainActivity.BackPressedManager
 {
     lateinit var rootView : View
     private lateinit var myManager : FragmentManager
+    private var childFragmentIndex = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,6 +31,7 @@ class BuyerFragment : Fragment(),
         rootView =  inflater.inflate(R.layout.fragment_buyer, container, false)
 
         myManager = this.childFragmentManager
+//        myManager = (activity as MainActivity).navHost.childFragmentManager
 
         val buyerItemChildFragment = BuyerItemChildFragment.newInstance(this)
         val buyerPayChildFragment = BuyerPayChildFragment.newInstance(this)
@@ -42,9 +45,36 @@ class BuyerFragment : Fragment(),
         return rootView
     }
 
+    override fun onBackPressed(): Boolean {
+        if(childFragmentIndex>0){
+            val buyerItemChildFragment = myManager.findFragmentByTag(ARG_FRAG_BUYER_ITEM)
+            val buyerPayChildFragment = myManager.findFragmentByTag(ARG_FRAG_BUYER_PAY)
+
+            val transaction = myManager.beginTransaction()
+            transaction.setCustomAnimations(
+                R.anim.slide_in_left,
+                R.anim.slide_out_right,
+                R.anim.slide_in_right,
+                R.anim.slide_out_left
+            )
+            transaction.hide(buyerPayChildFragment!!)
+            transaction.show(buyerItemChildFragment!!)
+            transaction.commit()
+            childFragmentIndex -=1
+            return true
+        }else{
+            return false
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         (activity as MainActivity).mSupportActionBar.title = MainModel.broadcastWatching.broadcastName
+    }
+
+    override fun onPause() {
+        super.onPause()
+        println("Buyer Frag onPause")
     }
 
     override fun onStop() {
@@ -65,8 +95,11 @@ class BuyerFragment : Fragment(),
         )
         transaction.show(buyerPayChildFragment!!)
         transaction.hide(buyerItemChildFragment!!)
-        transaction.addToBackStack(null)
+//        transaction.addToBackStack(null)
         transaction.commit()
+
+        childFragmentIndex = 1
+        //println(myManager.fragments)
     }
 
     override fun clickCheckPay() {

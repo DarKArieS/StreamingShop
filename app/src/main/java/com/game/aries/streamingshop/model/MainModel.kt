@@ -244,7 +244,10 @@ object MainModel {
         if(newList.size==0) return
         var oldIndex = 0
         while(true){
-            if (oldList.size != 0 && oldList[oldIndex].uploadState != UploadState.UPLOAD_NOT_YET){
+            if (oldList.size != 0 &&
+                oldList[oldIndex].uploadState != UploadState.UPLOAD_NOT_YET &&
+                oldList[oldIndex].uploadState != UploadState.ITEM_SELLING_START &&
+                oldList[oldIndex].uploadState != UploadState.ITEM_SELLING_END){
                 var updatedFlag = false
                 for ((newIndex,new) in newList.withIndex()){
                     if (oldList[oldIndex].uploadedID == new.uploadedID){
@@ -455,6 +458,82 @@ object MainModel {
                 }else{
                     failureCallBack()
                 }
+            }
+        })
+    }
+
+    fun startSellingSellerItem(successCallBack: ()->Unit, failureCallBack: ()->Unit, sellerItem:SellerItem){
+        val productJSON = JSONObject()
+            .put("id",sellerItem.uploadedID)
+            .put("life_time",sellerItem.life_time)
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("live_video_id", sellerBroadcast.broadcastID)
+            .put("product",productJSON)
+            .toString()
+        println(myJSON)
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/product/sell")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("start selling seller item")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    sellerItem.uploadState = UploadState.ITEM_SELLING_START
+                    sellerItem.uploadMessage = ""
+                }else{
+                    sellerItem.uploadMessage = readJSON.getString("response")
+                }
+                successCallBack()
+            }
+        })
+    }
+
+    fun stopSellingSellerItem(successCallBack: ()->Unit, failureCallBack: ()->Unit, sellerItem:SellerItem){
+        val productJSON = JSONObject()
+            .put("id",sellerItem.uploadedID)
+            .put("life_time",sellerItem.life_time)
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("live_video_id", sellerBroadcast.broadcastID)
+            .put("product",productJSON)
+            .toString()
+        println(myJSON)
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+        val request =
+            Request.Builder().url(backendUrl + "api/product/stopsell")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("start selling seller item")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                if(readJSON.getString("result")=="true"){
+                    sellerItem.uploadState = UploadState.ITEM_SELLING_END
+                    sellerItem.uploadMessage = ""
+                }else{
+                    sellerItem.uploadMessage = readJSON.getString("response")
+                }
+                successCallBack()
             }
         })
     }
