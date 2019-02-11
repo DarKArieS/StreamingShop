@@ -85,6 +85,11 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
 
         private fun initViewHolder(){
             if (!isInitialized){
+//                sellerProductName.setOnEditorActionListener { v, actionId, event ->  true}
+                sellerProductPrice.setOnEditorActionListener { v, actionId, event ->  true}
+//                sellerProductDescription.setOnEditorActionListener { v, actionId, event ->  true}
+//                sellerLifeTimeEditText.setOnEditorActionListener { v, actionId, event ->  true}
+
                 nameEditableBackgroundDrawable = sellerProductName.background
                 priceEditableBackgroundDrawable = sellerProductPrice.background
                 descriptionEditableBackgroundDrawable = sellerProductDescription.background
@@ -152,6 +157,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
 
         fun buttonStateUpdate(sellerItem: SellerItem){
             lockEditableText(false)
+            //lockEditableText(false)
             showProductImage.setImageResource(R.drawable.ic_add_a_photo_white_24dp)
             sellerItemUploadButton.text = "新增"
             sellerBroadcastItemButton.text = "開賣"
@@ -221,10 +227,19 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
                 sellerProductDescription.background = null
                 sellerLifeTimeEditText.background = null
 
+//                sellerProductName.isEnabled =false
+//                sellerProductPrice.isEnabled =false
+//                sellerProductDescription.isEnabled =false
+//                sellerLifeTimeEditText.isEnabled =false
+
                 sellerProductName.isFocusable = false
+                sellerProductName.isFocusableInTouchMode = false
                 sellerProductPrice.isFocusable = false
+                sellerProductPrice.isFocusableInTouchMode = false
                 sellerProductDescription.isFocusable = false
+                sellerProductDescription.isFocusableInTouchMode = false
                 sellerLifeTimeEditText.isFocusable = false
+                sellerLifeTimeEditText.isFocusableInTouchMode = false
 
                 sellerProductName.clearFocus()
                 sellerProductPrice.clearFocus()
@@ -236,14 +251,27 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
                 sellerProductPrice.setOnTouchListener { _,_ ->  false}
                 sellerProductDescription.setOnTouchListener { _,_ ->  false}
                 sellerLifeTimeEditText.setOnTouchListener { _,_ ->  false}
+
                 sellerProductName.background = nameEditableBackgroundDrawable
                 sellerProductPrice.background = priceEditableBackgroundDrawable
                 sellerProductDescription.background = descriptionEditableBackgroundDrawable
                 sellerLifeTimeEditText.background = lifetimeEditableBackgroundDrawable
+
+//                sellerProductName.isEnabled =true
+//                sellerProductPrice.isEnabled =true
+//                sellerProductDescription.isEnabled =true
+//                sellerLifeTimeEditText.isEnabled =true
+
                 sellerProductName.isFocusable = true
+                sellerProductName.isFocusableInTouchMode = true
                 sellerProductPrice.isFocusable = true
+                sellerProductPrice.isFocusableInTouchMode = true
                 sellerProductDescription.isFocusable = true
+                sellerProductDescription.isFocusableInTouchMode = true
                 sellerLifeTimeEditText.isFocusable = true
+                sellerLifeTimeEditText.isFocusableInTouchMode = true
+
+
             }
         }
 
@@ -342,9 +370,9 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         }
 
         private fun clickBroadcastItem(sellerItem: SellerItem){
-            if(!MainModel.isBroadcasting) return
+
             when(sellerItem.uploadState){
-                UploadState.UPLOAD_DONE->startBroadcastItem(sellerItem)
+                UploadState.UPLOAD_DONE->if(MainModel.isBroadcasting)startBroadcastItem(sellerItem)
                 UploadState.ITEM_SELLING_START->stopBroadcastItem(sellerItem)
                 else->return
             }

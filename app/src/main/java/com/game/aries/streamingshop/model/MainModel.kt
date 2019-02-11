@@ -491,6 +491,7 @@ object MainModel {
                 println(readJSON)
                 if(readJSON.getString("result")=="true"){
                     sellerItem.uploadState = UploadState.ITEM_SELLING_START
+                    sellerItem.sellingLiveVideoID = sellerBroadcast.broadcastID
                     sellerItem.uploadMessage = ""
                 }else{
                     sellerItem.uploadMessage = readJSON.getString("response")
@@ -506,7 +507,7 @@ object MainModel {
             .put("life_time",sellerItem.life_time)
         val myJSON = JSONObject()
             .put("token", AccessToken.getCurrentAccessToken().token)
-            .put("live_video_id", sellerBroadcast.broadcastID)
+            .put("live_video_id", sellerItem.sellingLiveVideoID)
             .put("product",productJSON)
             .toString()
         println(myJSON)
@@ -545,6 +546,37 @@ object MainModel {
 //===================================================================================================
     var broadcastWatching = Broadcast("","")
 
+    fun updateBroadcastList(successCallBack: ()->Unit, failureCallBack: ()->Unit)
+    {
+        val request =
+            Request.Builder().url(backendUrl + "api/live_video/lists")
+                .addHeader("Content-Type", "application/json")
+                .get()
+                .build()
 
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("get broadcast list")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                // Note: if there is no one streaming, the result of response will be false!
+
+//                if(readJSON.getString("result")=="true"){
+////                    val newSellerItemList = mutableListOf<SellerItem>()
+//                    val dataJsonArray = JSONArray(readJSON.getString("response"))
+//                    for (i in 0 until dataJsonArray.length()){
+//                        val dataJson = JSONObject(dataJsonArray[i].toString())
+//                        //newBroadcastList.add()
+//                    }
+//                }
+                successCallBack()
+            }
+        })
+    }
 
 }
