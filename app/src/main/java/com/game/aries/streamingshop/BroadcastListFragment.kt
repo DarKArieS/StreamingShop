@@ -12,6 +12,7 @@ import androidx.navigation.findNavController
 import com.game.aries.streamingshop.adapter.BroadcastListAdapter
 import com.game.aries.streamingshop.model.Broadcast
 import com.game.aries.streamingshop.model.MainModel
+import com.game.aries.streamingshop.utilities.CommunicationManager
 import kotlinx.android.synthetic.main.fragment_broadcast_list.view.*
 
 class BroadcastListFragment : Fragment(), BroadcastListAdapter.AdapterListener {
@@ -30,18 +31,28 @@ class BroadcastListFragment : Fragment(), BroadcastListAdapter.AdapterListener {
         MainModel.broadcastWatching = Broadcast("","")
 
         // setup adapter
-        val fakeList = listOf(
+        val fakeList = mutableListOf(
             Broadcast("我是直播","388355185056271"),
             Broadcast("Sen","395791191178138")
         )
-        setupAdapter(fakeList)
+//        MainModel.broadcastList = fakeList
+        setupAdapter(MainModel.broadcastList)
 
         return rootView
     }
 
     override fun clickBroadcast(selectedBroadcast: Broadcast) {
         MainModel.broadcastWatching = selectedBroadcast
-        navController.navigate(BroadcastListFragmentDirections.actionBroadcastListFragmentToBuyerFragment())
+//        navController.navigate(BroadcastListFragmentDirections.actionBroadcastListFragmentToBuyerFragment())
+
+        val cManager = CommunicationManager()
+        cManager.communication = { p0,p1->
+            MainModel.updateBuyerItemList(p0, p1)
+        }
+        cManager.navigation = {
+            navController.navigate(BroadcastListFragmentDirections.actionBroadcastListFragmentToBuyerFragment())
+        }
+        cManager.commit(activity as MainActivity)
     }
 
 

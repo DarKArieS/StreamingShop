@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity() {
                         R.anim.slide_in_left,
                         R.anim.slide_out_right
                     )
-                    transaction.hide(navHost.childFragmentManager.fragments[0])
+                    transaction.hide(navHost.childFragmentManager.fragments.last())
                     transaction.add(R.id.navHost, frag)
                     transaction.addToBackStack(null)
                     transaction.commit()
@@ -213,7 +213,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-            val currentFragment= navHost.childFragmentManager.fragments[0]
+            val currentFragment= navHost.childFragmentManager.fragments.last()
             if (currentFragment is BackPressedManager){
                 if(!(currentFragment as BackPressedManager).onBackPressed()){
                     super.onBackPressed()

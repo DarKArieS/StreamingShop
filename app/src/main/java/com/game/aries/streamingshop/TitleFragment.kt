@@ -47,7 +47,6 @@ class TitleFragment : Fragment() {
     }
 
     private fun testButton(){
-
 //        val request = GraphRequest.newGraphPathRequest(AccessToken.getCurrentAccessToken(),
 //            "785762085090409"
 //        ) {
@@ -59,7 +58,8 @@ class TitleFragment : Fragment() {
 //        request.parameters = parameters
 //        request.executeAsync()
 
-
+//========================================================================================
+        /*
         // socket test
         Thread{
             println("socket test")
@@ -86,10 +86,10 @@ class TitleFragment : Fragment() {
                 }
                 //Thread.sleep(2000)
             }
-
-
             println("End test")
         }.start()
+        */
+//========================================================================================
 
     }
 

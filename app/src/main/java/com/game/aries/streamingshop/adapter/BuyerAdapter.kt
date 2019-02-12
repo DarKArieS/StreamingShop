@@ -43,21 +43,23 @@ class BuyerAdapter (val context: Context, val buyerItemList: List<BuyerItem>, va
             showProductName.text = buyerItem.name
             showProductPrice.text = "單價: " + buyerItem.price.toString()
             showProductDescription.text = buyerItem.description
-            showTotalProductNumber.setText(buyerItem.number.toString())
-            showTotalProductPrice.text = (buyerItem.price * buyerItem.number).toString()
+            showTotalProductNumber.setText(buyerItem.amount.toString())
+            showTotalProductPrice.text = (buyerItem.price * buyerItem.amount).toString()
+
+            //ToDo: Listener optimized in RecyclerView
 
             showTotalProductNumber.addTextChangedListener(object: TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                     if(showTotalProductNumber.editableText.toString().length>3){
-                        buyerItem.number = 999
-                        showTotalProductNumber.setText(buyerItem.number.toString())
-                        showTotalProductPrice.text = (buyerItem.price * buyerItem.number).toString()
+                        buyerItem.amount = 999
+                        showTotalProductNumber.setText(buyerItem.amount.toString())
+                        showTotalProductPrice.text = (buyerItem.price * buyerItem.amount).toString()
                     }else if(showTotalProductNumber.editableText.toString()!=""){
-                        buyerItem.number = showTotalProductNumber.editableText.toString().toInt()
-                        showTotalProductPrice.text = (buyerItem.price * buyerItem.number).toString()
+                        buyerItem.amount = showTotalProductNumber.editableText.toString().toInt()
+                        showTotalProductPrice.text = (buyerItem.price * buyerItem.amount).toString()
                     }
                     else {
-                        buyerItem.number = 0
+                        buyerItem.amount = 0
                         showTotalProductPrice.text = "？"
                     }
                 }
@@ -73,14 +75,14 @@ class BuyerAdapter (val context: Context, val buyerItemList: List<BuyerItem>, va
         }
 
         fun clickMinusButton(buyerItem: BuyerItem){
-            if (buyerItem.number>0){
-                buyerItem.number --
-                showTotalProductNumber.setText(buyerItem.number.toString())
+            if (buyerItem.amount>0){
+                buyerItem.amount --
+                showTotalProductNumber.setText(buyerItem.amount.toString())
             }
         }
         fun clickPlusButton(buyerItem: BuyerItem){
-            buyerItem.number ++
-            showTotalProductNumber.setText(buyerItem.number.toString())
+            buyerItem.amount ++
+            showTotalProductNumber.setText(buyerItem.amount.toString())
         }
     }
 }

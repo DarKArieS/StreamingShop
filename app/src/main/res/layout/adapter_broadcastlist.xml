@@ -8,11 +8,12 @@
                                              android:id="@+id/broadcastListAdapterLayout">
 
     <WebView
-            android:layout_width="325dp"
+            android:layout_width="0dp"
             android:layout_height="225dp"
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"
-            app:layout_constraintTop_toTopOf="parent" android:id="@+id/broadcastPreviewWebView">
+            app:layout_constraintTop_toTopOf="parent" android:id="@+id/broadcastPreviewWebView"
+            android:layout_marginStart="24dp" android:layout_marginEnd="24dp">
     </WebView>
     <TextView
             android:text="直播名稱"

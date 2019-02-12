@@ -145,7 +145,7 @@ object MainModel {
         sellerBroadcast.broadcastName = sharedPreferences.getString(SF_BROADCAST_NAME,"我的直播")!!
     }
 
-    lateinit var sellerItemList : MutableList<SellerItem>
+    var sellerItemList = mutableListOf<SellerItem>()
 
     fun updateSellerItemList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
         val myJSON = JSONObject()
@@ -545,6 +545,8 @@ object MainModel {
 // for buyer page
 //===================================================================================================
     var broadcastWatching = Broadcast("","")
+    var broadcastList = mutableListOf<Broadcast>()
+    var buyerItemList = mutableListOf<BuyerItem>()
 
     fun updateBroadcastList(successCallBack: ()->Unit, failureCallBack: ()->Unit)
     {
@@ -565,18 +567,106 @@ object MainModel {
                 val readJSON = JSONObject(response!!.body()!!.string())
                 println(readJSON)
                 // Note: if there is no one streaming, the result of response will be false!
-
-//                if(readJSON.getString("result")=="true"){
-////                    val newSellerItemList = mutableListOf<SellerItem>()
-//                    val dataJsonArray = JSONArray(readJSON.getString("response"))
-//                    for (i in 0 until dataJsonArray.length()){
-//                        val dataJson = JSONObject(dataJsonArray[i].toString())
-//                        //newBroadcastList.add()
-//                    }
-//                }
+                broadcastList = mutableListOf()
+                if(readJSON.getString("result")=="True"){
+                    val dataJsonArray = JSONArray(readJSON.getString("response"))
+                    for (i in 0 until dataJsonArray.length()){
+                        val dataJson = JSONObject(dataJsonArray[i].toString())
+                        broadcastList.add(0,
+                            Broadcast(
+                                dataJson.getString("title"),
+                                dataJson.getString("live_video_id")
+                            )
+                        )
+                    }
+                    println(broadcastList)
+                }else{
+                    // empty list
+                }
                 successCallBack()
             }
         })
     }
 
+    fun updateBuyerItemList(successCallBack: ()->Unit, failureCallBack: ()->Unit)
+    {
+        // ToDo: if broadcastWatching is removed?
+        val request =
+            Request.Builder().url(backendUrl + "api/products/list/" + broadcastWatching.broadcastID)
+                .addHeader("Content-Type", "application/json")
+                .get()
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("get buyer item list")
+                //println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                // Note: if there is no one streaming, the result of response will be false!
+                buyerItemList = mutableListOf()
+                if(readJSON.getString("result")=="True"){
+                    val responseJson = JSONObject(readJSON.getString("response"))
+                    val dataJsonArray = JSONArray(responseJson.getString("products"))
+                    for (i in 0 until dataJsonArray.length()){
+                        val dataJson = JSONObject(dataJsonArray[i].toString())
+                        buyerItemList.add(0,
+                            BuyerItem(
+                                dataJson.getInt("id"),
+                                dataJson.getString("name"),
+                                dataJson.getInt("price"),
+                                dataJson.getString("description"),
+                                dataJson.getString("picture")
+                            )
+                        )
+                    }
+                }else{
+                    // empty list
+                }
+                successCallBack()
+            }
+        })
+    }
+
+    fun sendBuyerOrder(successCallBack: ()->Unit, failureCallBack: ()->Unit, itemList:List<BuyerItem>)
+    {
+        val productJSONArray = JSONArray()
+        for (i in itemList){
+            val itemJSON = JSONObject()
+                .put("id",i.id)
+                .put("quantity",i.amount)
+            productJSONArray.put(itemJSON)
+        }
+
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .put("live_video_id", broadcastWatching.broadcastID)
+            .put("products", productJSONArray)
+            .toString()
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+
+        val request =
+            Request.Builder().url(backendUrl + "api/orders/create")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("send buyer item list and pay")
+                println(response!!.body()!!.string())
+//                val readJSON = JSONObject(response!!.body()!!.string())
+//                println(readJSON)
+                successCallBack()
+            }
+        })
+    }
 }

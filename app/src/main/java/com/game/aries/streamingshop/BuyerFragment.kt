@@ -8,7 +8,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ScrollView
+import androidx.navigation.findNavController
+import com.game.aries.streamingshop.model.BuyerItem
 import com.game.aries.streamingshop.model.MainModel
+import com.game.aries.streamingshop.utilities.CommunicationManager
 import kotlinx.android.synthetic.main.fragment_buyer.view.*
 
 private const val ARG_FRAG_BUYER_ITEM = "ARG_FRAG_BUYER_ITEM"
@@ -82,9 +85,18 @@ class BuyerFragment : Fragment(),
         (activity as MainActivity).mSupportActionBar.title = getString(R.string.app_name)
     }
 
-    override fun goPayFragment() {
+    override fun goPayFragment(itemList:List<BuyerItem>) {
         val buyerItemChildFragment = myManager.findFragmentByTag(ARG_FRAG_BUYER_ITEM)
         val buyerPayChildFragment = myManager.findFragmentByTag(ARG_FRAG_BUYER_PAY)
+
+        val checkPaymentList = mutableListOf<BuyerItem>()
+        for(i in itemList){
+            if (i.amount > 0){
+                checkPaymentList.add(i)
+            }
+        }
+
+        (buyerPayChildFragment as BuyerPayChildFragment).setPaymentDetail(checkPaymentList)
 
         val transaction = myManager.beginTransaction()
         transaction.setCustomAnimations(
@@ -102,8 +114,21 @@ class BuyerFragment : Fragment(),
         //println(myManager.fragments)
     }
 
-    override fun clickCheckPay() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun clickCheckPay(itemList:List<BuyerItem>) {
+        val cManager = CommunicationManager()
+        cManager.communication = { p0,p1->
+            MainModel.sendBuyerOrder(p0, p1, itemList)
+        }
+        cManager.navigation = {
+            for (i in MainModel.buyerItemList){
+                i.amount = 0
+            }
+            val buyerItemChildFragment = myManager.findFragmentByTag(ARG_FRAG_BUYER_ITEM)
+            (buyerItemChildFragment as BuyerItemChildFragment).setupAdapter(MainModel.buyerItemList)
+
+            onBackPressed()
+        }
+        cManager.commit(activity as MainActivity)
     }
 
     private fun setupWebView (){
