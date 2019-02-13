@@ -111,7 +111,10 @@ class LoginFragment : Fragment() {
         val cManager = CommunicationManager()
         cManager.communication = { p0,p1->
             MainModel.checkIsFirstLogin(p0, p1)
-//            Thread{p0.invoke()}.start()
+//            Thread{
+//                Thread.sleep(1000)
+//                p0.invoke()
+//            }.start()
         }
         cManager.navigation = {
             if (MainModel.isFirstLogin){

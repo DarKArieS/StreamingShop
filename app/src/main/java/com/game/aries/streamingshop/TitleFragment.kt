@@ -12,11 +12,6 @@ import com.facebook.login.LoginManager
 import com.game.aries.streamingshop.model.MainModel
 import com.game.aries.streamingshop.utilities.CommunicationManager
 import kotlinx.android.synthetic.main.fragment_title.view.*
-import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
-import java.net.Socket
 
 
 class TitleFragment : Fragment() {
@@ -29,7 +24,7 @@ class TitleFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_title, container, false)
-        (activity as MainActivity).isExistsNavigationDrawer(true)
+        (activity as MainActivity).setExistNavigationDrawer(true)
 
         rootView.buyerButton.setOnClickListener {clickBuyerButton()}
         rootView.logoutButton.setOnClickListener { clickLogoutButton() }

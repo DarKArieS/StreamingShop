@@ -10,22 +10,23 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.PersistableBundle
 import android.support.constraint.ConstraintLayout
+import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentTransaction
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBar
 import android.support.v7.app.ActionBarDrawerToggle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import androidx.navigation.NavDirections
-import androidx.navigation.createGraph
-import androidx.navigation.findNavController
-import androidx.navigation.ui.NavigationUI
 import com.game.aries.streamingshop.utilities.MenuInterface
 import com.game.aries.streamingshop.model.MainModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.loading_layout.view.*
 
-class MainActivity : AppCompatActivity() {
+private const val ARG_NAV_FRAG_SETTING = "ARG_NAV_FRAG_SETTING"
+private const val ARG_NAV_FRAG_BUYER_ORDER = "ARG_NAV_FRAG_BUYER_ORDER"
+
+class MainActivity : AppCompatActivity(){
     lateinit var rootViewGroup : ViewGroup
 
     lateinit var customMenu: Menu
@@ -54,37 +55,108 @@ class MainActivity : AppCompatActivity() {
         println("MainActivity onCreate")
     }
 
-    private fun initNavigationDrawer(){
-        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED,navDrawer_right)
+    //===================================================================================
 
-        navDrawer_left.setNavigationItemSelectedListener { menuItem ->
-            drawerLayout.closeDrawers()
+    private enum class FragByNavDrawerTag{SAME,EXIST,ABSENCE}
 
-            when(menuItem.itemId){
-                R.id.drawer_setting->{
-                    println("click drawer setting")
-                    val transaction =
-                        navHost.childFragmentManager!!.beginTransaction()
-                    val frag = SettingFragment()
-
-                    transaction.setCustomAnimations(
-                        R.anim.slide_in_right,
-                        R.anim.slide_out_left,
-                        R.anim.slide_in_left,
-                        R.anim.slide_out_right
-                    )
-                    transaction.hide(navHost.childFragmentManager.fragments.last())
-                    transaction.add(R.id.navHost, frag)
-                    transaction.addToBackStack(null)
-                    transaction.commit()
-//                    println(navHost.childFragmentManager.fragments)
-                }
-            }
-            true
+    private fun checkCurrentFragmentOpenedByNavDrawer(tag:String): FragByNavDrawerTag{
+        val navHostFragmentManager= navHost.childFragmentManager
+        val foundFrag = navHostFragmentManager.findFragmentByTag(tag)
+        return when{
+            (foundFrag == null)->FragByNavDrawerTag.ABSENCE
+            foundFrag.isVisible->FragByNavDrawerTag.SAME
+            else->FragByNavDrawerTag.EXIST
         }
     }
 
-    fun isExistsNavigationDrawer(isExists:Boolean){
+    private fun getCurrentFragment() : Fragment{
+        val navHostFragmentManager= navHost.childFragmentManager
+        val navDrawerFragmentList =
+            listOf(ARG_NAV_FRAG_SETTING,ARG_NAV_FRAG_BUYER_ORDER)
+        for (i in navDrawerFragmentList){
+            val tryFragment = navHostFragmentManager.findFragmentByTag(i)
+            if(tryFragment?.isVisible == true) return tryFragment
+        }
+        return navHost.childFragmentManager.fragments.last()
+    }
+
+    private fun navDrawerNavigation(fragTag:String,
+                                    createFragCallback: () -> Fragment){
+        when(checkCurrentFragmentOpenedByNavDrawer(fragTag)){
+            (FragByNavDrawerTag.SAME)->{}
+            (FragByNavDrawerTag.EXIST)->{
+                val transaction =
+                    navHost.childFragmentManager.beginTransaction()
+                navDrawerAnimation(transaction)
+                transaction.hide(getCurrentFragment())
+                transaction.show(navHost.childFragmentManager.findFragmentByTag(fragTag)!!)
+                transaction.addToBackStack(null)
+                transaction.commit()
+            }
+            (FragByNavDrawerTag.ABSENCE)->{
+                val transaction =
+                    navHost.childFragmentManager.beginTransaction()
+                navDrawerAnimation(transaction)
+                transaction.hide(getCurrentFragment())
+                transaction.add(R.id.navHost, createFragCallback.invoke(), fragTag)
+                transaction.addToBackStack(null)
+                transaction.commit()
+            }
+            else -> {}
+        }
+    }
+
+    fun setNavDrawerItemCheck(){
+//        val currentFragment = getCurrentFragment()
+//        println("check navDrawerItem")
+//        println(currentFragment)
+
+        navDrawer_left.menu.findItem(R.id.drawer_setting).isChecked = false
+        navDrawer_left.menu.findItem(R.id.drawer_buyer_order).isChecked = false
+        when (getCurrentFragment()){
+            is SettingFragment->{
+//                println("now is in SettingFragment")
+                navDrawer_left.menu.findItem(R.id.drawer_setting).isChecked = true
+            }
+            is BuyerOrderFragment->{
+//                println("now is in BuyerOrderFragment")
+                navDrawer_left.menu.findItem(R.id.drawer_buyer_order).isChecked = true
+            }
+        }
+    }
+
+    private fun initNavigationDrawer(){
+        drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED,navDrawer_right)
+        navDrawer_left.setNavigationItemSelectedListener { menuItem ->
+            drawerLayout.closeDrawers()
+            when(menuItem.itemId){
+                R.id.drawer_setting->{
+//                    println("click drawer setting")
+                    val createInstance = {SettingFragment.newInstance()}
+                    navDrawerNavigation(ARG_NAV_FRAG_SETTING, createInstance)
+                    true
+                }
+                R.id.drawer_buyer_order->{
+//                    println("click drawer buyer order")
+                    val createInstance = {BuyerOrderFragment.newInstance()}
+                    navDrawerNavigation(ARG_NAV_FRAG_BUYER_ORDER, createInstance)
+                    true
+                }
+                else->false
+            }
+        }
+    }
+
+    private fun navDrawerAnimation(transaction:FragmentTransaction){
+        transaction.setCustomAnimations(
+            R.anim.slide_in_right,
+            R.anim.slide_out_left,
+            R.anim.slide_in_left,
+            R.anim.slide_out_right
+        )
+    }
+
+    fun setExistNavigationDrawer(isExists:Boolean){
         if(isExists){
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED,navDrawer_left)
             mSupportActionBar.setDisplayHomeAsUpEnabled(true)
@@ -97,6 +169,8 @@ class MainActivity : AppCompatActivity() {
             drawerToggle.syncState()
         }
     }
+
+    //===================================================================================
 
     private fun initAnimator(){
         loadingView = this.layoutInflater.inflate(R.layout.loading_layout, null)
@@ -158,6 +232,8 @@ class MainActivity : AppCompatActivity() {
         println("onResume")
     }
 
+    //===================================================================================
+
     // Solved(?) To Do: sometimes customMenu will be null
     // switch using "onPrepareOptionsMenu" may be better than "onCreateOptionsMenu"...
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
@@ -169,7 +245,7 @@ class MainActivity : AppCompatActivity() {
             this, drawerLayout, R.string.app_name, R.string.app_name)
 
         drawerLayout.addDrawerListener(drawerToggle)
-        isExistsNavigationDrawer(false)
+        setExistNavigationDrawer(false)
 
         println("MainActivity onPrepareOptionsMenu")
         return super.onPrepareOptionsMenu(menu)
@@ -202,6 +278,8 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    //===================================================================================
+
     interface BackPressedManager{
         fun onBackPressed(): Boolean
     }
@@ -213,7 +291,7 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-            val currentFragment= navHost.childFragmentManager.fragments.last()
+            val currentFragment= getCurrentFragment()
             if (currentFragment is BackPressedManager){
                 if(!(currentFragment as BackPressedManager).onBackPressed()){
                     super.onBackPressed()
@@ -221,6 +299,7 @@ class MainActivity : AppCompatActivity() {
             }else{
                 super.onBackPressed()
             }
+            setNavDrawerItemCheck()
         }
     }
 

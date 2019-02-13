@@ -539,6 +539,33 @@ object MainModel {
         })
     }
 
+    fun getSellerOrderList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .toString()
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+
+        val request =
+            Request.Builder().url(backendUrl + "api/seller/orders")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("get seller order list")
+                println(response!!.body()!!.string())
+//                val readJSON = JSONObject(response!!.body()!!.string())
+//                println(readJSON)
+                successCallBack()
+            }
+        })
+    }
+
     var isBroadcasting = false
 
 //===================================================================================================
@@ -662,6 +689,33 @@ object MainModel {
 
             override fun onResponse(call: Call?, response: Response?) {
                 println("send buyer item list and pay")
+                println(response!!.body()!!.string())
+//                val readJSON = JSONObject(response!!.body()!!.string())
+//                println(readJSON)
+                successCallBack()
+            }
+        })
+    }
+
+    fun getBuyerOrderList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+        val myJSON = JSONObject()
+            .put("token", AccessToken.getCurrentAccessToken().token)
+            .toString()
+        val myJSONRequestBody = RequestBody.create(MediaType.get("application/json"),myJSON)
+
+        val request =
+            Request.Builder().url(backendUrl + "api/buyer/orders")
+                .addHeader("Content-Type", "application/json")
+                .post(myJSONRequestBody)
+                .build()
+
+        OkHttpClient().newBuilder().build().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+
+            override fun onResponse(call: Call?, response: Response?) {
+                println("get buyer order list")
                 println(response!!.body()!!.string())
 //                val readJSON = JSONObject(response!!.body()!!.string())
 //                println(readJSON)

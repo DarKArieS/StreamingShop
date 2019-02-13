@@ -23,7 +23,6 @@ import java.io.File
 import java.lang.Exception
 import android.os.Build
 import android.support.v4.content.FileProvider
-import android.support.v7.widget.RecyclerView
 import android.widget.Toast
 import androidx.navigation.findNavController
 import com.game.aries.streamingshop.dialog.AlarmDialog
@@ -137,18 +136,18 @@ class SellerFragment : Fragment(), MenuInterface,
                 if(MainModel.isBroadcasting){
                     (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = false
                     (activity as MainActivity).menuInterface = null
-                    (activity as MainActivity).isExistsNavigationDrawer(false)
+                    (activity as MainActivity).setExistNavigationDrawer(false)
                 }else{
                     (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = true
                     (activity as MainActivity).menuInterface = this
-                    (activity as MainActivity).isExistsNavigationDrawer(true)
+                    (activity as MainActivity).setExistNavigationDrawer(true)
                 }
             }
             false->{
                 (activity as MainActivity).customMenu.findItem(R.id.action_edit).isVisible = false
                 (activity as MainActivity).mSupportActionBar.title = getString(R.string.app_name)
                 (activity as MainActivity).menuInterface = null
-                (activity as MainActivity).isExistsNavigationDrawer(true)
+                (activity as MainActivity).setExistNavigationDrawer(true)
             }
         }
     }
