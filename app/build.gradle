@@ -44,4 +44,10 @@ dependencies {
 
     implementation 'com.facebook.android:facebook-login:4.39.0'
     implementation 'com.squareup.okhttp3:okhttp:3.12.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
+
+    implementation ('io.socket:socket.io-client:1.0.0') {
+        // excluding org.json which is provided by Android
+        exclude group: 'org.json', module: 'json'
+    }
 }
