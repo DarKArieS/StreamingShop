@@ -11,6 +11,9 @@ import com.facebook.AccessToken
 import com.facebook.login.LoginManager
 import com.game.aries.streamingshop.model.MainModel
 import com.game.aries.streamingshop.utilities.CommunicationManager
+import io.socket.client.IO
+import io.socket.client.Socket
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.fragment_title.view.*
 
 
@@ -85,7 +88,59 @@ class TitleFragment : Fragment() {
         }.start()
         */
 //========================================================================================
+        //socket io
+        println("test socket io")
+        val opt = IO.Options()
+        opt.path = "tasks"
+//        val socket = IO.socket("http://ac78b079.ngrok.io")
+        val socket = IO.socket("http://192.168.55.226:3000")
+//        val socket = IO.socket("http://192.168.56.216:487")
 
+        socket.on(Socket.EVENT_CONNECT, object: Emitter.Listener{
+            override fun call(vararg args: Any?) {
+                println("connected!")
+                println(args)
+            }
+        })
+        socket.on(Socket.EVENT_PING, object: Emitter.Listener{
+            override fun call(vararg args: Any?) {
+                println("ping!")
+                println(args)
+            }
+        })
+
+        socket.on(Socket.EVENT_MESSAGE, object: Emitter.Listener{
+            override fun call(vararg args: Any?) {
+                println("message!")
+                println(args)
+            }
+        })
+
+        socket.on(Socket.EVENT_ERROR, object: Emitter.Listener{
+            override fun call(vararg args: Any?) {
+                println("error!")
+                println(args)
+            }
+        })
+
+//        socket.on("TaskCreated:tasks", object: Emitter.Listener{
+//            override fun call(vararg args: Any?) {
+//                println("tasks")
+//                println(args)
+//            }
+//        })
+
+
+        socket.on("test-channel:UserSignedUp", object: Emitter.Listener{
+            override fun call(vararg args: Any?) {
+                println("get a message")
+                println(args[0])
+            }
+        })
+
+        socket.connect()
+        //socket.emit("/tasks", "XDD")
+        //socket.disconnect()
     }
 
     private fun clickBuyerButton(){
