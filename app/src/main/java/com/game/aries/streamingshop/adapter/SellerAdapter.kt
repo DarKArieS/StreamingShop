@@ -86,7 +86,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         private fun initViewHolder(){
             if (!isInitialized){
 //                sellerProductName.setOnEditorActionListener { v, actionId, event ->  true}
-                sellerProductPrice.setOnEditorActionListener { v, actionId, event ->  true}
+                sellerProductPrice.setOnEditorActionListener { _, _, _ ->  true}
 //                sellerProductDescription.setOnEditorActionListener { v, actionId, event ->  true}
 //                sellerLifeTimeEditText.setOnEditorActionListener { v, actionId, event ->  true}
 

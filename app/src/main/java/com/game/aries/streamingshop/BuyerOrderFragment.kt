@@ -4,7 +4,6 @@ package com.game.aries.streamingshop
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import com.game.aries.streamingshop.model.MainModel
@@ -15,7 +14,7 @@ import kotlinx.android.synthetic.main.fragment_buyer_order.view.*
 private const val ARG_FRAG_BUYER_ORDER_ITEM = "ARG_FRAG_BUYER_ORDER_ITEM"
 private const val ARG_FRAG_BUYER_ORDER_BROADCAST = "ARG_FRAG_BUYER_ORDER_BROADCAST"
 
-class BuyerOrderFragment : Fragment(){
+class BuyerOrderFragment : Fragment(), MainActivity.BackPressedManager{
     lateinit var rootView : View
 
     companion object {
@@ -48,8 +47,8 @@ class BuyerOrderFragment : Fragment(){
     private fun clickTestButton(){
         val cManager = CommunicationManager()
         cManager.communication = { p0,p1->
-            MainModel.getBuyerOrderList(p0, p1)
-            MainModel.getSellerOrderList(p0, p1)
+            MainModel.updateBuyerOrderList(p0, p1)
+            MainModel.updateSellerOrderList(p0, p1)
         }
         cManager.commit(activity as MainActivity)
     }
@@ -66,9 +65,19 @@ class BuyerOrderFragment : Fragment(){
             R.anim.slide_in_left,
             R.anim.slide_out_right
         )
+        rootView.buyerOrderChildFragTitle.text = "購買明細"
         transaction.show(buyerOrderItemChildFragment!!)
         transaction.hide(buyerOrderBroadcastChildFragment!!)
         transaction.addToBackStack(null)
         transaction.commit()
+    }
+
+    override fun onBackPressed(): Boolean {
+        val myManager = this.childFragmentManager
+        return if(myManager.backStackEntryCount > 0) {
+            rootView.buyerOrderChildFragTitle.text = "有買商品的直播"
+            myManager.popBackStack()
+            true
+        }else false
     }
 }

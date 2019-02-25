@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.game.aries.streamingshop.model.Broadcast
 
 
 class BuyerOrderItemChildFragment : Fragment(){
@@ -15,7 +14,7 @@ class BuyerOrderItemChildFragment : Fragment(){
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        rootView = inflater.inflate(R.layout.fragment_buyer_order_item_child, container, false)
+        rootView = inflater.inflate(R.layout.child_fragment_buyer_order_item, container, false)
 
         return rootView
     }

@@ -1,8 +1,8 @@
 package com.game.aries.streamingshop.model
 
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.SharedPreferences
+import android.net.Uri
 import com.facebook.AccessToken
 import okhttp3.*
 import org.json.JSONArray
@@ -135,13 +135,13 @@ object MainModel {
 
     val sellerBroadcast = Broadcast("我的直播拍賣","")
 
-    fun saveSellerInfo(activity: ContextWrapper){
-        sharedPreferences = activity.getSharedPreferences(SF_SELLER, Context.MODE_PRIVATE)
+    fun saveSellerInfo(context: Context){
+        sharedPreferences = context.getSharedPreferences(SF_SELLER, Context.MODE_PRIVATE)
         sharedPreferences.edit().putString(SF_BROADCAST_NAME, sellerBroadcast.broadcastName).apply()
     }
 
-    fun loadSellerInfo(activity: ContextWrapper){
-        sharedPreferences = activity.getSharedPreferences(SF_SELLER, Context.MODE_PRIVATE)
+    fun loadSellerInfo(context: Context){
+        sharedPreferences = context.getSharedPreferences(SF_SELLER, Context.MODE_PRIVATE)
         sellerBroadcast.broadcastName = sharedPreferences.getString(SF_BROADCAST_NAME,"我的直播")!!
     }
 
@@ -539,7 +539,7 @@ object MainModel {
         })
     }
 
-    fun getSellerOrderList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+    fun updateSellerOrderList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
         val myJSON = JSONObject()
             .put("token", AccessToken.getCurrentAccessToken().token)
             .toString()
@@ -574,6 +574,7 @@ object MainModel {
     var broadcastWatching = Broadcast("","")
     var broadcastList = mutableListOf<Broadcast>()
     var buyerItemList = mutableListOf<BuyerItem>()
+    var buyerOrderList = mutableListOf<BuyerOrderItem>()
 
     fun updateBroadcastList(successCallBack: ()->Unit, failureCallBack: ()->Unit)
     {
@@ -697,7 +698,7 @@ object MainModel {
         })
     }
 
-    fun getBuyerOrderList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
+    fun updateBuyerOrderList(successCallBack: ()->Unit, failureCallBack: ()->Unit){
         val myJSON = JSONObject()
             .put("token", AccessToken.getCurrentAccessToken().token)
             .toString()
@@ -716,9 +717,68 @@ object MainModel {
 
             override fun onResponse(call: Call?, response: Response?) {
                 println("get buyer order list")
-                println(response!!.body()!!.string())
-//                val readJSON = JSONObject(response!!.body()!!.string())
-//                println(readJSON)
+//                println(response!!.body()!!.string())
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                buyerOrderList = mutableListOf()
+                if(readJSON.getString("result")=="true"){
+                    val responseJson = JSONObject(readJSON.getString("response"))
+                    val dataJsonArray = JSONArray(responseJson.getString("order"))
+                    for (i in 0 until dataJsonArray.length()){
+                        val dataJson = JSONObject(dataJsonArray[i].toString())
+                        buyerOrderList.add(0,
+                            BuyerOrderItem(
+                                dataJson.getInt("id"),
+                                Broadcast("某直播",dataJson.getString("live_video_id")),
+                                dataJson.getString("name"),
+                                dataJson.getInt("price"),
+                                dataJson.getString("description"),
+                                dataJson.getString("picture"),
+                                dataJson.getInt("quantity")
+                            )
+                        )
+                    }
+                }else{
+                    // empty list
+                }
+                successCallBack()
+            }
+        })
+    }
+
+    fun getBuyerOrderBroadcastList(): List<Broadcast>{
+        val list = mutableListOf<Broadcast>()
+        //buyerOrderList.groupBy(())
+//        var list = listOf(1,2,3,4,5)
+//        var a = list.groupBy { if (it >3) "big" else "small" }
+
+        return list
+    }
+
+    fun uploadImage(successCallBack: ()->Unit, failureCallBack: ()->Unit, uri: Uri){
+        val file = File(uri.path)
+        val mediaType = MediaType.parse("image/png")
+        val multiBody = MultipartBody.Builder()
+
+        multiBody.setType(MultipartBody.FORM)
+        multiBody.addFormDataPart("image", file.name, RequestBody.create(mediaType, file))
+
+        val requestBody = multiBody.build() as RequestBody
+
+        val request = Request.Builder().url("https://api.imgur.com/3/image")
+            .addHeader("Authorization", "Client-ID 1614eda81f6e8db")
+            .post(requestBody)
+            .build()
+
+        val client: OkHttpClient = OkHttpClient().newBuilder().build()
+        val call = client.newCall(request)
+        call.enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+            override fun onResponse(call: Call?, response: Response?) {
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
                 successCallBack()
             }
         })

@@ -369,5 +369,12 @@ class SellerFragment : Fragment(), MenuInterface,
     private fun updateAdapterImage(uri:Uri?, index:Int){
         MainModel.sellerItemList[index].picture = uri.toString()
         currentViewHolder!!.updateImage(MainModel.sellerItemList[index])
+
+//        val cManager = CommunicationManager()
+//        cManager.loadingMessage = "Uploading"
+//        cManager.communication = { p0,p1->
+//            MainModel.uploadImage(p0,p1,uri!!)
+//        }
+//        cManager.commit(activity as MainActivity)
     }
 }

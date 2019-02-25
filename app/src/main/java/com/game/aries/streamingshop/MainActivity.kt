@@ -188,7 +188,8 @@ class MainActivity : AppCompatActivity(){
                     ConstraintLayout.LayoutParams.MATCH_PARENT
                 )
                 rootViewGroup.addView(loadingView,params)
-                (rootViewGroup.loadingAnimator.background as AnimationDrawable).start()
+                //(rootViewGroup.loadingAnimator.background as AnimationDrawable).start()
+                (loadingView.loadingAnimator.background as AnimationDrawable).start()
             }
             override fun onAnimationEnd(animation: Animator) {}
             override fun onAnimationCancel(animation: Animator) {}
@@ -202,7 +203,8 @@ class MainActivity : AppCompatActivity(){
         transitionAnimExit.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animation: Animator) {}
             override fun onAnimationEnd(animation: Animator) {
-                (rootViewGroup.loadingAnimator.background as AnimationDrawable).stop()
+//                (rootViewGroup.loadingAnimator.background as AnimationDrawable).stop()
+                (loadingView.loadingAnimator.background as AnimationDrawable).stop()
                 rootViewGroup.removeView(loadingView)
                 MainModel.isLoading = false
             }
@@ -212,7 +214,7 @@ class MainActivity : AppCompatActivity(){
     }
 
     fun showLoadingView(loadingString:String="Connecting"){
-        loadingView.loadingTextView.text = loadingString
+        loadingView.loadingTextView?.text = loadingString
         transitionAnimEnter.start()
     }
 

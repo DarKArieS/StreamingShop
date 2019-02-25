@@ -3,7 +3,11 @@
                                              xmlns:app="http://schemas.android.com/apk/res-auto"
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="match_parent"
-                                             android:layout_height="75dp">
+                                             android:layout_height="75dp"
+                                             android:id="@+id/buyerOrderBroadcastViewHolderLayout"
+                                             android:clickable="true"
+                                             android:focusable="true"
+                                             android:background="@drawable/adapter_background2">
 
     <TextView
             android:text="直播名稱"

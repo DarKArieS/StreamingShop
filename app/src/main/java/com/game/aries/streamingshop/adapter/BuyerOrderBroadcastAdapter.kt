@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.game.aries.streamingshop.R
 import com.game.aries.streamingshop.model.Broadcast
+import kotlinx.android.synthetic.main.adapter_buyer_order_broadcast.view.*
 
 class BuyerOrderBroadcastAdapter (val context: Context, val broadcastList: List<Broadcast>, val adapterListener:AdapterListener):
     RecyclerView.Adapter<BuyerOrderBroadcastAdapter.ViewHolder>() {
@@ -27,8 +28,14 @@ class BuyerOrderBroadcastAdapter (val context: Context, val broadcastList: List<
     }
 
     inner class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-        fun bind(buyerItem: Broadcast) {
+        private val viewHolderLayout = itemView.buyerOrderBroadcastViewHolderLayout
+        private val broadcastNameView = itemView.showBuyerOrderBroadcastName
+        private val totalPriceView = itemView.showBuyerOrderTotalPrice
 
+        fun bind(broadcast: Broadcast) {
+            viewHolderLayout.setOnClickListener { adapterListener.clickBuyerOrderBroadcast() }
+            broadcastNameView.text = "直播名稱：" + broadcast.broadcastName
         }
+
     }
 }

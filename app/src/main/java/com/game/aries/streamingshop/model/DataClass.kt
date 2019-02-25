@@ -21,6 +21,8 @@ enum class UploadState{
 
 data class BuyerItem(var id: Int, var name:String, var price:Int, var description:String, var picture:String = "", var amount: Int = 0)
 
+data class BuyerOrderItem(var id: Int, var broadcast:Broadcast, var name:String, var price:Int, var description:String, var picture:String, var amount: Int )
+
 data class Broadcast(var broadcastName:String, var broadcastID:String)
 
 data class UserInfo(var id: Int, var name:String, var phone:String, var address:String)
