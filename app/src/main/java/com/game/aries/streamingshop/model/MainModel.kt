@@ -283,7 +283,7 @@ object MainModel {
             .put("name",sellerItem.name)
             .put("description",sellerItem.description)
             .put("price",sellerItem.price.toString())
-            .put("picture","123.png")
+            .put("picture",sellerItem.picture)
             .put("life_time",sellerItem.life_time)
         val myJSON = JSONObject()
             .put("token", AccessToken.getCurrentAccessToken().token)
@@ -327,7 +327,8 @@ object MainModel {
             .put("name",sellerItem.name)
             .put("description",sellerItem.description)
             .put("price",sellerItem.price.toString())
-            .put("picture","123.png")
+//            .put("picture","123.png")
+            .put("picture",sellerItem.picture)
             .put("life_time",sellerItem.life_time)
         val myJSON = JSONObject()
             .put("token", AccessToken.getCurrentAccessToken().token)
@@ -364,6 +365,7 @@ object MainModel {
     }
 
     fun deleteSellerItem(successCallBack: ()->Unit, failureCallBack: ()->Unit, sellerItem:SellerItem){
+        //ToDo delete picture
         val productJSON = JSONObject()
             .put("id",sellerItem.uploadedID)
         val myJSON = JSONObject()
@@ -755,7 +757,8 @@ object MainModel {
         return list
     }
 
-    fun uploadImage(successCallBack: ()->Unit, failureCallBack: ()->Unit, uri: Uri){
+    fun uploadImage(successCallBack: ()->Unit, failureCallBack: ()->Unit, uri: Uri, sellerItem:SellerItem){
+        println("upload photo to imgur")
         val file = File(uri.path)
         val mediaType = MediaType.parse("image/png")
         val multiBody = MultipartBody.Builder()
@@ -779,8 +782,43 @@ object MainModel {
             override fun onResponse(call: Call?, response: Response?) {
                 val readJSON = JSONObject(response!!.body()!!.string())
                 println(readJSON)
+                val dataJSON = JSONObject(readJSON.getString("data"))
+                sellerItem.picture = dataJSON.getString("link")
                 successCallBack()
             }
         })
     }
+
+    fun deleteImage(successCallBack: ()->Unit, failureCallBack: ()->Unit, uri: Uri, sellerItem:SellerItem){
+        println("upload photo to imgur")
+        val file = File(uri.path)
+        val mediaType = MediaType.parse("image/png")
+        val multiBody = MultipartBody.Builder()
+
+        multiBody.setType(MultipartBody.FORM)
+        multiBody.addFormDataPart("image", file.name, RequestBody.create(mediaType, file))
+
+        val requestBody = multiBody.build() as RequestBody
+
+        val request = Request.Builder().url("https://api.imgur.com/3/image")
+            .addHeader("Authorization", "Client-ID 1614eda81f6e8db")
+            .post(requestBody)
+            .build()
+
+        val client: OkHttpClient = OkHttpClient().newBuilder().build()
+        val call = client.newCall(request)
+        call.enqueue(object: Callback {
+            override fun onFailure(call: Call?, e: IOException?) {
+                failureCallBack()
+            }
+            override fun onResponse(call: Call?, response: Response?) {
+                val readJSON = JSONObject(response!!.body()!!.string())
+                println(readJSON)
+                val dataJSON = JSONObject(readJSON.getString("data"))
+                sellerItem.picture = dataJSON.getString("link")
+                successCallBack()
+            }
+        })
+    }
+
 }

@@ -197,7 +197,7 @@ class SellerFragment : Fragment(), MenuInterface,
                 setSellerFragmentActionBar(true)
                 for (subscriber in viewHolderSubscribers)
                     if(subscriber.adapterPosition>=0)
-                        subscriber.buttonStateUpdate(MainModel.sellerItemList[subscriber.adapterPosition])
+                        subscriber.viewStateUpdate()
             }
             cManager.commit(activity as MainActivity)
         }
@@ -213,7 +213,7 @@ class SellerFragment : Fragment(), MenuInterface,
                 rootView.startStreamFloatingActionButton.setImageResource(R.drawable.ic_streaming_vector)
                 for (subscriber in viewHolderSubscribers)
                     if(subscriber.adapterPosition>=0)
-                        subscriber.buttonStateUpdate(MainModel.sellerItemList[subscriber.adapterPosition])
+                        subscriber.viewStateUpdate()
             }
             cManager.commit(activity as MainActivity)
         }else{
@@ -367,8 +367,8 @@ class SellerFragment : Fragment(), MenuInterface,
     }
 
     private fun updateAdapterImage(uri:Uri?, index:Int){
-        MainModel.sellerItemList[index].picture = uri.toString()
-        currentViewHolder!!.updateImage(MainModel.sellerItemList[index])
+        println("update local image: " + uri.toString())
+        currentViewHolder!!.updateImage(uri!!)
 
 //        val cManager = CommunicationManager()
 //        cManager.loadingMessage = "Uploading"

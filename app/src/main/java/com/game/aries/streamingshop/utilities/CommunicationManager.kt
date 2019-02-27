@@ -9,6 +9,7 @@ import com.game.aries.streamingshop.model.MainModel
 class CommunicationManager {
     var navigation: (() -> Unit)? = null
     var customCallback: (() -> Unit)? = null
+    var afterCallback: (() -> Unit)? = null
 
     // this callback needs to run on other thread
     var communication: ((successCallback: () -> Unit, failureCallback: () -> Unit)->Unit)? = null
@@ -17,23 +18,23 @@ class CommunicationManager {
 
     val handler = Handler()
 
-    fun commit(mainActivity: MainActivity) {
+    fun commit(mainActivity: MainActivity){
+        if(communication==null) return
+
         //TodoDone: Bug: communicating中onStop(例如按下多工鍵)，navigate會被吃掉
         val fullCallBack = {
-            var handlerStatus = handler.post {
-                if (customCallback != null) customCallback!!()
-            }
+            var handlerStatus = false
+            if (customCallback != null) handlerStatus = handler.post { customCallback!!() }
 
             //navigation navigate protecting
             while (MainModel.mainActivityStatus == MainModel.MainActivityLifeCycle.PAUSE) {
                 Thread.sleep(500)
             }
 
-            handlerStatus = handler.post { if (navigation != null) navigation!!() }
+            if (navigation != null) handlerStatus = handler.post {  navigation!!() }
             Thread.sleep(200)
 
-            handlerStatus = handler.post { mainActivity.hideLoadingView() }
-
+            handlerStatus = handler.post { mainActivity.hideLoadingView(afterCallback) }
         }
 
         val failureCallback = {

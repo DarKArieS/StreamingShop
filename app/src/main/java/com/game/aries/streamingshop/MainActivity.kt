@@ -207,6 +207,7 @@ class MainActivity : AppCompatActivity(){
                 (loadingView.loadingAnimator.background as AnimationDrawable).stop()
                 rootViewGroup.removeView(loadingView)
                 MainModel.isLoading = false
+                afterLoadingAnimationCallback?.invoke()
             }
             override fun onAnimationCancel(animation: Animator) {}
             override fun onAnimationRepeat(animation: Animator) {}
@@ -218,7 +219,10 @@ class MainActivity : AppCompatActivity(){
         transitionAnimEnter.start()
     }
 
-    fun hideLoadingView(){
+    private var afterLoadingAnimationCallback: (() -> Unit)? = null
+
+    fun hideLoadingView(afterCallback:(() -> Unit)? = null){
+        afterLoadingAnimationCallback = afterCallback
         transitionAnimExit.start()
     }
 

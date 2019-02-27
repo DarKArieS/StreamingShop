@@ -1,7 +1,6 @@
 package com.game.aries.streamingshop.adapter
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
@@ -10,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.bumptech.glide.Glide
 import com.game.aries.streamingshop.MainActivity
 import com.game.aries.streamingshop.model.SellerItem
 import kotlinx.android.synthetic.main.adapter_seller.view.*
@@ -30,6 +30,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
         val view = LayoutInflater.from(p0.context).inflate(R.layout.adapter_seller, p0, false)
+
         return ViewHolder(view)
     }
 
@@ -51,13 +52,12 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
         private val showProductImage = itemView.showProductImage
         private val showRemainingTime = itemView.showRemainingTime
 
-        private var nameEditableBackgroundDrawable : Drawable? = null
-        private var priceEditableBackgroundDrawable : Drawable? = null
-        private var descriptionEditableBackgroundDrawable : Drawable? = null
-        private var lifetimeEditableBackgroundDrawable : Drawable? = null
+        private var nameEditableBackgroundDrawable = sellerProductName.background
+        private var priceEditableBackgroundDrawable = sellerProductPrice.background
+        private var descriptionEditableBackgroundDrawable = sellerProductDescription.background
+        private var lifetimeEditableBackgroundDrawable = sellerLifeTimeEditText.background
 
         private var updateViewFlag = false
-        private var isInitialized = false
         private var timerHolder : ItemTimer? = null
 
         fun bind(sellerItem: SellerItem) {
@@ -68,81 +68,84 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
 
             timerHolder = sellerItem.itemTimer
-            initViewHolder()
             refreshView(sellerItem)
-            deleteButton.setOnClickListener{ clickDeleteItem() }
-            sellerItemUploadButton.setOnClickListener{ clickSellerItemUploadButton(sellerItem) }
-            sellerBroadcastItemButton.setOnClickListener { clickBroadcastItem(sellerItem)}
-            showProductImage.setOnClickListener { listener.adapterSetImage(this)}
         }
 
-        private fun modifyItemInfo(sellerItem:SellerItem){
-            if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
-                sellerItem.uploadState = UploadState.UPLOAD_MODIFIED
-                buttonStateUpdate(sellerItem)
+        private fun modifyItemInfo(){
+            if(sellerItemList[adapterPosition].uploadState==UploadState.UPLOAD_DONE){
+                sellerItemList[adapterPosition].uploadState = UploadState.UPLOAD_MODIFIED
+                sellerItemList[adapterPosition].modifyTmp = sellerItemList[adapterPosition].copy()
+                println("modify tmp")
+                println(sellerItemList[adapterPosition].modifyTmp)
+                viewStateUpdate()
             }
         }
 
-        private fun initViewHolder(){
-            if (!isInitialized){
-//                sellerProductName.setOnEditorActionListener { v, actionId, event ->  true}
-                sellerProductPrice.setOnEditorActionListener { _, _, _ ->  true}
+        private fun restoreItemInfo(){
+            if(sellerItemList[adapterPosition].uploadState==UploadState.UPLOAD_MODIFIED){
+                sellerItemList[adapterPosition] = sellerItemList[adapterPosition].modifyTmp!!.copy()
+                sellerItemList[adapterPosition].modifyTmp = null
+                sellerItemList[adapterPosition].uploadState = UploadState.UPLOAD_DONE
+                refreshView(sellerItemList[adapterPosition])
+            }
+        }
+
+        init{
+            sellerProductName.setOnEditorActionListener { _, _, _ ->  true}
+            sellerProductPrice.setOnEditorActionListener { _, _, _ ->  true}
 //                sellerProductDescription.setOnEditorActionListener { v, actionId, event ->  true}
 //                sellerLifeTimeEditText.setOnEditorActionListener { v, actionId, event ->  true}
 
-                nameEditableBackgroundDrawable = sellerProductName.background
-                priceEditableBackgroundDrawable = sellerProductPrice.background
-                descriptionEditableBackgroundDrawable = sellerProductDescription.background
-                lifetimeEditableBackgroundDrawable = sellerLifeTimeEditText.background
-                // println("add one viewHolder: " + this.hashCode())
-                sellerProductName.addTextChangedListener(object: TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-                        if(!updateViewFlag) {
-                            sellerItemList[adapterPosition].name = sellerProductName.editableText.toString()
-                            modifyItemInfo(sellerItemList[adapterPosition])
-                        }
+            sellerProductName.addTextChangedListener(object: TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    if(!updateViewFlag) {
+                        modifyItemInfo()
+                        sellerItemList[adapterPosition].name = sellerProductName.editableText.toString()
                     }
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                })
-                sellerProductPrice.addTextChangedListener(object: TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-                        if(!updateViewFlag) {
-                            if (sellerProductPrice.editableText.toString() != "")
-                                sellerItemList[adapterPosition].price = sellerProductPrice.editableText.toString().toInt()
-                            else sellerItemList[adapterPosition].price = 0
-                            modifyItemInfo(sellerItemList[adapterPosition])
-                        }
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+            sellerProductPrice.addTextChangedListener(object: TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    if(!updateViewFlag) {
+                        modifyItemInfo()
+                        if (sellerProductPrice.editableText.toString() != "")
+                            sellerItemList[adapterPosition].price = sellerProductPrice.editableText.toString().toInt()
+                        else sellerItemList[adapterPosition].price = 0
                     }
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                })
-                sellerProductDescription.addTextChangedListener(object: TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-                        if(!updateViewFlag) {
-                            sellerItemList[adapterPosition].description = sellerProductDescription.editableText.toString()
-                            modifyItemInfo(sellerItemList[adapterPosition])
-                        }
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+            sellerProductDescription.addTextChangedListener(object: TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    if(!updateViewFlag) {
+                        modifyItemInfo()
+                        sellerItemList[adapterPosition].description = sellerProductDescription.editableText.toString()
                     }
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                })
-                sellerLifeTimeEditText.addTextChangedListener(object: TextWatcher {
-                    override fun afterTextChanged(s: Editable?) {
-                        if(!updateViewFlag) {
-                            if (sellerLifeTimeEditText.editableText.toString() != "")
-                                sellerItemList[adapterPosition].life_time = sellerLifeTimeEditText.editableText.toString().toInt() * 60
-                            else sellerItemList[adapterPosition].life_time = 0
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+            sellerLifeTimeEditText.addTextChangedListener(object: TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    if(!updateViewFlag) {
+                        modifyItemInfo()
+                        if (sellerLifeTimeEditText.editableText.toString() != "")
+                            sellerItemList[adapterPosition].life_time = sellerLifeTimeEditText.editableText.toString().toInt() * 60
+                        else sellerItemList[adapterPosition].life_time = 0
+                    }
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+            listener.adapterSubscribeViewHolder(this)
 
-                            modifyItemInfo(sellerItemList[adapterPosition])
-                        }
-                    }
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                })
-                listener.adapterSubscribeViewHolder(this)
-                isInitialized = true
-            }
+            deleteButton.setOnClickListener{ clickDeleteItem() }
+            sellerItemUploadButton.setOnClickListener{ clickSellerItemUploadButton() }
+            sellerBroadcastItemButton.setOnClickListener { clickBroadcastItem()}
+            showProductImage.setOnClickListener { clickImage()}
         }
 
         private fun refreshView(sellerItem: SellerItem){
@@ -152,12 +155,12 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             sellerProductDescription.setText(sellerItem.description)
             sellerLifeTimeEditText.setText(lifeTimeProcessor(sellerItem))
             updateViewFlag = false
-            buttonStateUpdate(sellerItem)
+            viewStateUpdate()
         }
 
-        fun buttonStateUpdate(sellerItem: SellerItem){
+        fun viewStateUpdate(){
+            val sellerItem = sellerItemList[adapterPosition]
             lockEditableText(false)
-            //lockEditableText(false)
             showProductImage.setImageResource(R.drawable.ic_add_a_photo_white_24dp)
             sellerItemUploadButton.text = "新增"
             sellerBroadcastItemButton.text = "開賣"
@@ -165,14 +168,18 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             sellerBroadcastItemButton.visibility = View.INVISIBLE
             deleteButton.visibility = View.VISIBLE
             sellerItemUploadButton.visibility = View.VISIBLE
-            if(sellerItem.picture!="") updateImage(sellerItem)
+            if(sellerItem.picture!="") refreshImage()
             if(sellerItem.uploadState != UploadState.ITEM_SELLING_START){
                 showRemainingTime.text = "分鐘"
                 sellerLifeTimeEditText.visibility = View.VISIBLE
             }
 
             when(sellerItem.uploadState){
-                UploadState.UPLOAD_MODIFIED->sellerItemUploadButton.text = "修改"
+                UploadState.UPLOAD_MODIFIED->{
+                    sellerItemUploadButton.text = "修改"
+                    sellerBroadcastItemButton.text = "復原"
+                    sellerBroadcastItemButton.visibility = View.VISIBLE
+                }
                 UploadState.UPLOAD_DONE->{
                     sellerItemUploadButton.text = "已儲存"
                     if(MainModel.isBroadcasting) sellerBroadcastItemButton.visibility = View.VISIBLE
@@ -205,6 +212,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
                     sellerItem.itemTimer?.removeListener()
                     sellerItem.itemTimer = null
                 }
+                else->{}
             }
         }
 
@@ -270,8 +278,6 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
                 sellerProductDescription.isFocusableInTouchMode = true
                 sellerLifeTimeEditText.isFocusable = true
                 sellerLifeTimeEditText.isFocusableInTouchMode = true
-
-
             }
         }
 
@@ -295,25 +301,54 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
         }
 
-        fun updateImage(sellerItem: SellerItem){
-//            println("set viewholder image!")
-//            println(sellerItem)
-            if(sellerItem.uploadState == UploadState.UPLOAD_NOT_YET){
-                val imageUri = Uri.parse(sellerItem.picture)
-                showProductImage.setImageURI(imageUri)
+        private fun refreshImage(){
+            // read from local file
+            //showProductImage.setImageURI(Uri.parse(sellerItemList[adapterPosition].picture))
+            if(sellerItemList[adapterPosition].picture!="empty"){
+                Glide.with(context)
+                    .load(Uri.parse(sellerItemList[adapterPosition].picture))
+                    .placeholder(R.drawable.ic_add_a_photo_white_24dp)
+                    .into(showProductImage)
             }
         }
 
-        private fun clickSellerItemUploadButton(sellerItem: SellerItem){
-            when(sellerItem.uploadState){
-                UploadState.UPLOAD_NOT_YET->uploadNewItem(sellerItem)
-                UploadState.UPLOAD_MODIFIED->uploadModifiedItem(sellerItem)
+        fun updateImage(uri:Uri){
+//            println("set viewholder image!")
+//            println(sellerItem)
+            when{
+                (sellerItemList[adapterPosition].uploadState == UploadState.UPLOAD_NOT_YET ||
+                 sellerItemList[adapterPosition].uploadState == UploadState.UPLOAD_MODIFIED)->{
+                    sellerItemList[adapterPosition].picture = uri.toString()
+                    refreshImage()
+                }
+                (sellerItemList[adapterPosition].uploadState == UploadState.UPLOAD_DONE)->{
+                    modifyItemInfo()
+                    sellerItemList[adapterPosition].picture = uri.toString()
+                    refreshImage()
+                }
+            }
+        }
+
+        private fun clickSellerItemUploadButton(){
+            when(sellerItemList[adapterPosition].uploadState){
+                UploadState.UPLOAD_NOT_YET->uploadNewItem()
+                UploadState.UPLOAD_MODIFIED->uploadModifiedItem()
                 else->return
             }
         }
 
         private fun clickDeleteItem(){
             listener.adapterDeleteItem(this)
+        }
+
+        private fun clickImage(){
+            if (sellerItemList[adapterPosition].uploadState == UploadState.UPLOAD_NOT_YET ||
+                sellerItemList[adapterPosition].uploadState == UploadState.UPLOAD_MODIFIED ||
+                sellerItemList[adapterPosition].uploadState == UploadState.UPLOAD_DONE )
+            {
+                listener.adapterSetImage(this)
+            }
+
         }
 
         fun deleteItem(sellerItem: SellerItem){
@@ -327,6 +362,7 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
                 cManager.customCallback={
                     sellerItemList.removeAt(adapterPosition)
                     notifyItemRemoved(adapterPosition)
+                    //ToDo delete imgur photo
                 }
                 cManager.commit(currentActivity)
             }else{
@@ -335,10 +371,10 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             }
         }
 
-        fun uploadNewItem(sellerItem: SellerItem){
+        fun uploadNewItem(){
+            val sellerItem = sellerItemList[adapterPosition]
             val cManager = CommunicationManager()
             cManager.loadingMessage = "Uploading"
-            val imageUri = Uri.parse(sellerItem.picture)
             cManager.communication = { p0,p1->
                 MainModel.addSellerItem(p0,p1,sellerItem)
             }
@@ -346,39 +382,69 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
                 if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
                     refreshView(sellerItem)
                 }else{
-                    Toast.makeText(currentActivity, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
                 }
             }
-            cManager.commit(currentActivity)
+
+            if (sellerItem.picture.contains("file:")){
+                //upload to imgur
+                val imgurComManager = CommunicationManager()
+                imgurComManager.loadingMessage = "Picture uploading"
+                imgurComManager.communication = { p0,p1->
+                    MainModel.uploadImage(p0,p1,Uri.parse(sellerItem.picture),sellerItem)
+                }
+                imgurComManager.afterCallback = {
+                    cManager.commit(currentActivity)
+                }
+                imgurComManager.commit(currentActivity)
+            }else{
+                cManager.commit(currentActivity)
+            }
         }
 
-        fun uploadModifiedItem(sellerItem: SellerItem){
+        fun uploadModifiedItem(){
+            val sellerItem = sellerItemList[adapterPosition]
             val cManager = CommunicationManager()
             cManager.loadingMessage = "Uploading"
-            val imageUri = Uri.parse(sellerItem.picture)
             cManager.communication = { p0,p1->
                 MainModel.modifySellerItem(p0,p1,sellerItem)
             }
             cManager.customCallback = {
-                if(sellerItem.uploadState == UploadState.UPLOAD_DONE){
+                if(sellerItem.uploadState==UploadState.UPLOAD_DONE){
                     refreshView(sellerItem)
                 }else{
-                    Toast.makeText(currentActivity, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, sellerItem.uploadMessage, Toast.LENGTH_SHORT).show()
                 }
             }
-            cManager.commit(currentActivity)
+
+            if (sellerItem.picture.contains("file:")){
+                //upload to imgur
+                val imgurComManager = CommunicationManager()
+                imgurComManager.loadingMessage = "Picture uploading"
+                imgurComManager.communication = { p0,p1->
+                    MainModel.uploadImage(p0,p1,Uri.parse(sellerItem.picture),sellerItem)
+                }
+                imgurComManager.afterCallback = {
+                    cManager.commit(currentActivity)
+                }
+                imgurComManager.commit(currentActivity)
+
+            }else{
+                cManager.commit(currentActivity)
+            }
         }
 
-        private fun clickBroadcastItem(sellerItem: SellerItem){
-
-            when(sellerItem.uploadState){
-                UploadState.UPLOAD_DONE->if(MainModel.isBroadcasting)startBroadcastItem(sellerItem)
-                UploadState.ITEM_SELLING_START->stopBroadcastItem(sellerItem)
+        private fun clickBroadcastItem(){
+            when(sellerItemList[adapterPosition].uploadState){
+                UploadState.UPLOAD_DONE->if(MainModel.isBroadcasting)startBroadcastItem()
+                UploadState.ITEM_SELLING_START->stopBroadcastItem()
+                UploadState.UPLOAD_MODIFIED->restoreItemInfo()
                 else->return
             }
         }
 
-        fun startBroadcastItem(sellerItem: SellerItem){
+        fun startBroadcastItem(){
+            val sellerItem = sellerItemList[adapterPosition]
             val cManager = CommunicationManager()
             cManager.loadingMessage = "Uploading"
             cManager.communication = { p0,p1->
@@ -409,7 +475,8 @@ class SellerAdapter (val context: Context, var sellerItemList: MutableList<Selle
             refreshView(sellerItem)
         }
 
-        fun stopBroadcastItem(sellerItem: SellerItem){
+        fun stopBroadcastItem(){
+            val sellerItem = sellerItemList[adapterPosition]
             val cManager = CommunicationManager()
             cManager.loadingMessage = "Uploading"
             cManager.communication = { p0,p1->
