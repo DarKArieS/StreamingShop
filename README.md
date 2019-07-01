@@ -26,7 +26,7 @@
 
 點擊左方照片圖示新增商品照片，照片可來自於相簿或相機。
 
-<img src="https://i.imgur.com/vI9oLC7.gif" width="200">
+[點擊連結觀看動畫](https://i.imgur.com/vI9oLC7.gifv)
 
 完成後點擊新增，將商品資訊上傳到後端伺服器，商品照片則會上傳至 imgur 圖床。
 
